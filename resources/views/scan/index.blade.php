@@ -5,7 +5,7 @@
     <div class="max-w-7xl mx-auto">
         <div class="flex justify-between items-center mb-8">
             <h2 class="text-3xl font-bold text-white">My Scans</h2>
-            <a href="{{ route('scan.create') }}" 
+            <a href="{{ route('scan.create') }}"
                 class="px-4 py-2 text-base font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500">
                 Add New Scan
             </a>
@@ -19,7 +19,7 @@
                 <h3 class="mt-2 text-sm font-medium text-gray-300">No scans</h3>
                 <p class="mt-1 text-sm text-gray-400">Get started by creating a new scan.</p>
                 <div class="mt-6">
-                    <a href="{{ route('scan.create') }}" 
+                    <a href="{{ route('scan.create') }}"
                         class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500">
                         <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
@@ -34,13 +34,17 @@
                     <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                         @if($scan->cover_image)
                             <div class="relative w-full h-64">
-                                <img src="{{ asset('storage/' . $scan->cover_image) }}" 
+                                <img src="{{ asset('storage/' . $scan->cover_image) }}"
                                     alt="{{ $scan->title }}"
                                     class="absolute inset-0 w-full h-full object-contain bg-gray-700">
                             </div>
                         @endif
                         <div class="p-6">
-                            <h3 class="text-xl font-semibold text-white mb-2">{{ $scan->title }}</h3>
+                            <h3 class="text-xl font-semibold text-white mb-2">
+                                <a href="{{ route('scan.show', $scan) }}" class="hover:underline">
+                                    {{ $scan->title }}
+                                </a>
+                            </h3>
                             @if($scan->summary)
                                 <p class="text-gray-400 text-sm mb-4 line-clamp-3">{{ $scan->summary }}</p>
                             @endif
@@ -50,7 +54,7 @@
                             </div>
                             @if($scan->link_to_scan)
                                 <div class="mt-4">
-                                    <a href="{{ $scan->link_to_scan }}" 
+                                    <a href="{{ $scan->link_to_scan }}"
                                         target="_blank"
                                         class="inline-flex items-center text-sm text-indigo-400 hover:text-indigo-300">
                                         <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,13 +65,13 @@
                                 </div>
                             @endif
                             <div class="mt-4 flex justify-end space-x-2">
-                                <a href="{{ route('scan.edit', $scan) }}" 
+                                <a href="{{ route('scan.edit', $scan) }}"
                                     class="text-gray-400 hover:text-white">
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </a>
-                                <button type="button" 
+                                <button type="button"
                                     onclick="showDeleteModal('{{ $scan->id }}', '{{ $scan->title }}')"
                                     class="text-gray-400 hover:text-red-400">
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,14 +107,14 @@
                 <form id="deleteForm" method="POST" class="inline">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" 
+                    <button type="submit"
                         class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
                         Delete
                     </button>
                 </form>
             </div>
             <div class="items-center px-4 py-3">
-                <button onclick="hideDeleteModal()" 
+                <button onclick="hideDeleteModal()"
                     class="px-4 py-2 bg-gray-700 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
                     Cancel
                 </button>
@@ -125,13 +129,13 @@ function showDeleteModal(scanId, scanTitle) {
     const modalContent = modal.querySelector('div');
     const form = document.getElementById('deleteForm');
     const titleSpan = document.getElementById('deleteScanTitle');
-    
+
     // Set the scan title in the modal
     titleSpan.textContent = scanTitle;
-    
+
     // Update the form action
     form.action = `/scan/${scanId}`;
-    
+
     // Show the modal with animation
     modal.classList.remove('hidden');
     // Trigger reflow
@@ -143,11 +147,11 @@ function showDeleteModal(scanId, scanTitle) {
 function hideDeleteModal() {
     const modal = document.getElementById('deleteModal');
     const modalContent = modal.querySelector('div');
-    
+
     // Hide with animation
     modalContent.classList.add('scale-0', 'opacity-0');
     modal.classList.remove('bg-opacity-50');
-    
+
     // Wait for animation to complete before hiding
     setTimeout(() => {
         modal.classList.add('hidden');
@@ -161,4 +165,4 @@ document.getElementById('deleteModal').addEventListener('click', function(e) {
     }
 });
 </script>
-@endsection 
+@endsection
