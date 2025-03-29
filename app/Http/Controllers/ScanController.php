@@ -81,9 +81,10 @@ class ScanController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(scan $scan)
+    public function destroy(string $id)
     {
-        //
+        Scan::destroy($id);
+        return redirect()->route('scan.index')->with('success', 'Scan removed successfully.');
     }
 
     /**
