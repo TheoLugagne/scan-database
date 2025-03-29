@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\scan;
+use App\Models\Scan;
 use Illuminate\Http\Request;
 
 class ScanController extends Controller
