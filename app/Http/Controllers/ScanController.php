@@ -12,7 +12,8 @@ class ScanController extends Controller
      */
     public function index()
     {
-        //
+        $scans = Scan::orderBy('last_update', 'desc')->get();
+        return view('scan.index', compact('scans'));
     }
 
     /**
