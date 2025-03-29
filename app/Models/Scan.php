@@ -11,6 +11,13 @@ class Scan extends Model
     use HasFactory;
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -20,6 +27,7 @@ class Scan extends Model
         'summary',
         'current_chapter',
         'cover_image',
-        'link_to_scan'
+        'link_to_scan',
+        'create_date'
     ];
 }
