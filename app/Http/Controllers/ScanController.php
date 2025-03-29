@@ -57,9 +57,10 @@ class ScanController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(scan $scan)
+    public function show(string $id)
     {
-        //
+        $scan = Scan::findOrFail($id);
+        return view('scan.show', compact('scan'));
     }
 
     /**
