@@ -28,6 +28,12 @@ class Scan extends Model
         'current_chapter',
         'cover_image',
         'link_to_scan',
-        'create_date'
+        'create_date',
+        'last_update'
+    ];
+
+    protected $casts = [
+        'create_date' => 'datetime',
+        'last_update' => 'datetime'
     ];
 }
