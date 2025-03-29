@@ -5,10 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class scan extends Model
+class Scan extends Model
 {
     /** @use HasFactory<\Database\Factories\ScanFactory> */
     use HasFactory;
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.
@@ -20,6 +27,7 @@ class scan extends Model
         'summary',
         'current_chapter',
         'cover_image',
-        'link_to_scan'
+        'link_to_scan',
+        'create_date'
     ];
 }
