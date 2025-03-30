@@ -157,13 +157,11 @@ class ScanController extends Controller
         $this->authorize('update', $scan);
         try {
             $validated = $request->validate([
-                'current_chapter' => 'required|numeric|min:0',
-                'last_update' => now()
+                'current_chapter' => 'required|numeric|min:0'
             ]);
 
             $scan->update([
-                'current_chapter' => $validated['current_chapter'],
-                'last_update' => $validated['last_update']
+                'current_chapter' => $validated['current_chapter']
             ]);
 
             return response()->json([
