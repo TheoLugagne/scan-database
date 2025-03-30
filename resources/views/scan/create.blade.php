@@ -67,12 +67,12 @@
 
                 <div>
                     <label for="cover_image" class="block text-base font-medium text-gray-300">Cover Image</label>
-                    <input type="file" name="cover_image" id="cover_image" accept="image/jpeg,image/png,image/jpg,image/gif"
+                    <input type="file" name="cover_image" id="cover_image" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                         class="mt-2 block w-full text-base text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-base file:font-medium file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 @error('cover_image') border-red-500 @enderror">
                     @error('cover_image')
                         <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1 text-sm text-gray-400">Optional, max 2MB, JPG/PNG/GIF only</p>
+                    <p class="mt-1 text-sm text-gray-400">Optional, max 2MB, JPG/PNG/GIF/WEBP only</p>
                 </div>
             </div>
 

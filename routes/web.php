@@ -7,3 +7,5 @@ Route::get('/', function () {
 });
 
 Route::resource('scan', \App\Http\Controllers\ScanController::class);
+
+Route::post('/scan/{scan}/update-chapter', [App\Http\Controllers\ScanController::class, 'updateChapter'])->name('scan.update-chapter');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Scan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ScanController extends Controller
 {
@@ -33,7 +34,7 @@ class ScanController extends Controller
             'title' => 'required|string|max:255|unique:scans,title',
             'summary' => 'nullable|string',
             'current_chapter' => 'required|numeric|min:0',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'link_to_scan' => 'nullable|url'
         ]);
 
@@ -67,15 +68,40 @@ class ScanController extends Controller
      */
     public function edit(scan $scan)
     {
-        //
+        return view('scan.edit', compact('scan'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, scan $scan)
+    public function update(Request $request, Scan $scan)
     {
-        //
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255|unique:scans,title',
+            'summary' => 'nullable|string',
+            'current_chapter' => 'required|numeric|min:0',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'link_to_scan' => 'nullable|url'
+        ]);
+
+        if ($request->hasFile('cover_image')) {
+            // Delete old image if exists
+            if ($scan->cover_image) {
+                Storage::disk('public')->delete($scan->cover_image);
+            }
+            
+            $path = $request->file('cover_image')->store('covers', 'public');
+            $validated['cover_image'] = $path;
+        }
+
+        // Add timestamps
+        $validatedData['last_update'] = now();
+        
+        // Update the scan
+        $scan->update($validatedData);
+        
+        // Redirect back to the previous page
+        return redirect()->back()->with('success', 'Scan updated successfully');
     }
 
     /**
@@ -94,5 +120,28 @@ class ScanController extends Controller
     {
         $exists = Scan::where('title', $request->title)->exists();
         return response()->json(['exists' => $exists]);
+    }
+
+    public function updateChapter(Request $request, Scan $scan)
+    {
+        try {
+            $validated = $request->validate([
+                'current_chapter' => 'required|numeric|min:0'
+            ]);
+
+            $scan->update([
+                'current_chapter' => $validated['current_chapter']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Chapter updated successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating chapter'
+            ], 500);
+        }
     }
 }

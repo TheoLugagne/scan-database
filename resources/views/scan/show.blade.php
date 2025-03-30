@@ -19,7 +19,28 @@
 
                 <div class="border-b border-gray-700 pb-4">
                     <h3 class="text-gray-400 text-sm">Current Chapter</h3>
-                    <p class="text-white text-lg">{{ $scan->current_chapter }}</p>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" 
+                            id="current_chapter" 
+                            value="{{ $scan->current_chapter }}" 
+                            step="0.1"
+                            class="mt-1 block w-32 rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 text-base">
+                        
+                        <button type="button"
+                            onclick="incrementChapter()"
+                            class="mt-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded flex items-center">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                        </button>
+
+                        <button type="button"
+                            onclick="updateChapter()"
+                            class="mt-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded">
+                            Validate
+                        </button>
+                    </div>
+                    <div id="chapter-update-message" class="mt-2 text-sm hidden"></div>
                 </div>
 
                 <div class="border-b border-gray-700 pb-4">
@@ -40,7 +61,8 @@
             <div class="bg-gray-900 rounded-lg p-6">
                 @if($scan->cover_image)
                     <h3 class="text-white text-xl mb-4">Cover Image</h3>
-                    <img src="{{ $scan->cover_image }}" alt="Cover Image" class="max-w-full h-auto rounded">
+                    <img src="{{ asset('storage/' . $scan->cover_image) }}"
+                    alt="{{ $scan->title }}" class="max-w-full h-56 object-contain rounded">
                 @else
                     <p class="text-gray-400">No cover image available</p>
                 @endif
@@ -66,4 +88,57 @@
 </div>
 
 <x-delete-modal />
+
+<script>
+function incrementChapter() {
+    const input = document.getElementById('current_chapter');
+    input.value = (parseFloat(input.value) + 1).toFixed(1);
+}
+
+function updateChapter() {
+    const chapter = document.getElementById('current_chapter').value;
+    const messageDiv = document.getElementById('chapter-update-message');
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('current_chapter', chapter);
+    formData.append('_token', '{{ csrf_token() }}');
+
+    // Send request
+    fetch('/scan/{{ $scan->id }}/update-chapter', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        messageDiv.classList.remove('hidden');
+        if (data.success) {
+            messageDiv.className = 'mt-2 text-sm text-green-500';
+            messageDiv.textContent = 'Chapter updated successfully';
+        } else {
+            messageDiv.className = 'mt-2 text-sm text-red-500';
+            messageDiv.textContent = 'Error updating chapter';
+        }
+        
+        // Hide message after 3 seconds
+        setTimeout(() => {
+            messageDiv.classList.add('hidden');
+        }, 3000);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        messageDiv.classList.remove('hidden');
+        messageDiv.className = 'mt-2 text-sm text-red-500';
+        messageDiv.textContent = 'Error updating chapter';
+        
+        // Hide message after 3 seconds
+        setTimeout(() => {
+            messageDiv.classList.add('hidden');
+        }, 3000);
+    });
+}
+</script>
 @endsection
