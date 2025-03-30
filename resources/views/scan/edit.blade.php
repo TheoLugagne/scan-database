@@ -1,15 +1,11 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-white">
+            {{ __('Edit') }} - {{ $scan->title }}
+        </h2>
+    </x-slot>
 
-@section('content')
-<div class="container mx-auto px-4 py-8">
     <div class="bg-gray-800 rounded-lg shadow-lg p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-white">Edit Scan</h1>
-            <a href="{{ url()->previous() }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
-                back
-            </a>
-        </div>
-
         <form action="{{ route('scan.update', $scan) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
@@ -52,16 +48,26 @@
                     <!-- Summary -->
                     <div class="border-b border-gray-700 pb-4">
                         <h3 class="text-gray-400 text-sm">Summary</h3>
-                        <textarea name="summary" id="summary" rows="6"
+                        <textarea name="summary" id="summary" rows="4"
                             class="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 text-base">{{ old('summary', $scan->summary) }}</textarea>
                         @error('summary')
                             <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    <div class="pt-4 flex space-x-4">
+                        <button type="submit" 
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+                            Update Scan
+                        </button>
+                        <a href="{{ route('scan.show', $scan) }}" 
+                            class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
+                            Cancel
+                        </a>
+                    </div>
                 </div>
 
                 <div class="bg-gray-900 rounded-lg p-6">
-                    <!-- Cover Image -->
                     <h3 class="text-white text-xl mb-4">Cover Image</h3>
                     <input type="file" name="cover_image" id="cover_image" 
                         class="mt-1 block w-full text-sm text-gray-300
@@ -78,20 +84,11 @@
                         <div class="mt-4">
                             <img src="{{ asset('storage/' . $scan->cover_image) }}" 
                                 alt="Current cover" 
-                                class="max-w-full h-100 object-contain rounded">
+                                class="max-w-full h-48 object-contain rounded">
                         </div>
                     @endif
                 </div>
             </div>
-
-            <!-- Submit Button -->
-            <div class="mt-6 flex space-x-4">
-                <button type="submit" 
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
-                    Update Scan
-                </button>
-            </div>
         </form>
     </div>
-</div>
-@endsection
+</x-app-layout>

@@ -1,10 +1,11 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-white">
+            {{ __('Create New Scan') }}
+        </h2>
+    </x-slot>
 
-@section('content')
-<div class="bg-gray-900 rounded-lg shadow-xl p-8">
-    <div class="max-w-4xl mx-auto">
-        <h2 class="text-3xl font-bold text-white mb-8">Add New Scan</h2>
-        
+    <div class="bg-gray-800 rounded-lg shadow-lg p-6">
         @if ($errors->any())
             <div class="mb-6 bg-red-900 border border-red-700 rounded-lg p-4">
                 <div class="flex">
@@ -100,7 +101,7 @@
             </div>
         </form>
     </div>
-</div>
+</x-app-layout>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -115,5 +116,4 @@ document.addEventListener('DOMContentLoaded', function() {
         form.classList.add('was-validated');
     });
 });
-</script>
-@endsection 
+</script> 
