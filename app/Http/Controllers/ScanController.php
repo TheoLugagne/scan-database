@@ -57,9 +57,9 @@ class ScanController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(scan $scan)
+    public function show(Scan $scan)
     {
-        //
+        return view('scan.show', compact('scan'));
     }
 
     /**
