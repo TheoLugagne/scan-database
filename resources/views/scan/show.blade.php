@@ -67,5 +67,3 @@
 
 <x-delete-modal />
 @endsection
-
-
