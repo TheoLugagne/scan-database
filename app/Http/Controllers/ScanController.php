@@ -164,7 +164,7 @@ class ScanController extends Controller
             $scan->update([
                 'current_chapter' => $validated['current_chapter'],
                 'last_update' => $validated['last_update']
-            ])
+            ]);
 
             return response()->json([
                 'success' => true,
