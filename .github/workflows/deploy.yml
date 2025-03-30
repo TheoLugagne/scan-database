@@ -21,4 +21,5 @@ jobs:
           cd ${{ secrets.SSH_REMOTE_PATH }}
           git pull
           php artisan migrate
+          npm install
           npm run build
