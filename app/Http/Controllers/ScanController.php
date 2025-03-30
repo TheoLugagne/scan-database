@@ -135,6 +135,10 @@ class ScanController extends Controller
     public function destroy(Scan $scan)
     {
         $this->authorize('delete', $scan);
+        // Delete the cover image if it exists
+        if ($scan->cover_image) {
+            Storage::disk('public')->delete($scan->cover_image);
+        }
         Scan::destroy($scan->id);
         return redirect()->route('scan.index')->with('success', 'Scan removed successfully.');
     }

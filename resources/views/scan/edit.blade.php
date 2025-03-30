@@ -26,7 +26,7 @@
                     <!-- Current Chapter -->
                     <div class="border-b border-gray-700 pb-4">
                         <h3 class="text-gray-400 text-sm">Current Chapter</h3>
-                        <input type="number" step="0.1" name="current_chapter" id="current_chapter" 
+                        <input type="number" step="0.5" name="current_chapter" id="current_chapter" 
                             value="{{ old('current_chapter', $scan->current_chapter) }}"
                             class="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 text-base">
                         @error('current_chapter')

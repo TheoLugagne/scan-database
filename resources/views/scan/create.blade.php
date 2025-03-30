@@ -57,8 +57,8 @@
                 <div>
                     <label for="current_chapter" class="block text-base font-medium text-gray-300">Current Chapter</label>
                     <input type="number" name="current_chapter" id="current_chapter" required
-                        min="0" step="0.1"
-                        value="{{ old('current_chapter') }}"
+                        min="0" step="0.5"
+                        value="0"
                         class="mt-2 block w-full rounded-md bg-gray-800 border-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base p-2 @error('current_chapter') border-red-500 @enderror">
                     @error('current_chapter')
                         <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
