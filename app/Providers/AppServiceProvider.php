@@ -21,4 +21,13 @@ class AppServiceProvider extends ServiceProvider
     {
         //
     }
+
+    /**
+     * The path to your application's "home" route.
+     *
+     * Typically, users are redirected here after authentication.
+     *
+     * @var string
+     */
+    public const HOME = '/scan';
 }

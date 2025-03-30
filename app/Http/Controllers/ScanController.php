@@ -5,15 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Scan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ScanController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $scans = Scan::orderBy('last_update', 'desc')->get();
+        $scans = Auth::user()->scans()->latest('last_update')->get();
         return view('scan.index', compact('scans'));
     }
 
@@ -30,26 +35,35 @@ class ScanController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255|unique:scans,title',
+        $validated = $request->validate([
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('scans')->where(function ($query) {
+                    return $query->where('user_id', auth()->id());
+                })
+            ],
             'summary' => 'nullable|string',
             'current_chapter' => 'required|numeric|min:0',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'link_to_scan' => 'nullable|url'
         ]);
 
+        $validated['user_id'] = auth()->id();
+
         if ($request->hasFile('cover_image')) {
             $image = $request->file('cover_image');
             $path = $image->store('images', 'public');
-            $validatedData['cover_image'] = $path;
+            $validated['cover_image'] = $path;
         }
 
         // Add timestamps
-        $validatedData['create_date'] = now();
-        $validatedData['last_update'] = now();
+        $validated['create_date'] = now();
+        $validated['last_update'] = now();
 
         // Create the scan record
-        $scan = Scan::create($validatedData);
+        $scan = Scan::create($validated);
 
         return redirect()->route('scan.index')
             ->with('success', 'Scan created successfully.');
@@ -60,14 +74,16 @@ class ScanController extends Controller
      */
     public function show(Scan $scan)
     {
+        $this->authorize('view', $scan);
         return view('scan.show', compact('scan'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(scan $scan)
+    public function edit(Scan $scan)
     {
+        $this->authorize('update', $scan);
         return view('scan.edit', compact('scan'));
     }
 
@@ -76,8 +92,17 @@ class ScanController extends Controller
      */
     public function update(Request $request, Scan $scan)
     {
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255|unique:scans,title',
+        $this->authorize('update', $scan);
+
+        $validated = $request->validate([
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('scans')->where(function ($query) {
+                    return $query->where('user_id', auth()->id());
+                })->ignore($scan->id)
+            ],
             'summary' => 'nullable|string',
             'current_chapter' => 'required|numeric|min:0',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -95,10 +120,10 @@ class ScanController extends Controller
         }
 
         // Add timestamps
-        $validatedData['last_update'] = now();
+        $validated['last_update'] = now();
         
         // Update the scan
-        $scan->update($validatedData);
+        $scan->update($validated);
         
         // Redirect back to the previous page
         return redirect()->back()->with('success', 'Scan updated successfully');
@@ -107,9 +132,10 @@ class ScanController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Scan $scan)
     {
-        Scan::destroy($id);
+        $this->authorize('delete', $scan);
+        Scan::destroy($scan->id);
         return redirect()->route('scan.index')->with('success', 'Scan removed successfully.');
     }
 
@@ -124,6 +150,7 @@ class ScanController extends Controller
 
     public function updateChapter(Request $request, Scan $scan)
     {
+        $this->authorize('update', $scan);
         try {
             $validated = $request->validate([
                 'current_chapter' => 'required|numeric|min:0'

@@ -29,11 +29,17 @@ class Scan extends Model
         'cover_image',
         'link_to_scan',
         'create_date',
-        'last_update'
+        'last_update',
+        'user_id'
     ];
 
     protected $casts = [
         'create_date' => 'datetime',
         'last_update' => 'datetime'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
