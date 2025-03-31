@@ -1,7 +1,7 @@
 @if ($paginator->hasPages())
     <nav role="navigation" aria-label="{{ __('Pagination Navigation') }}" class="flex items-center justify-between">
         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
+            <div class="flex items-center space-x-2">
                 <p class="text-sm text-gray-300 leading-5">
                     Page {{ $paginator->currentPage() }} of {{ $paginator->lastPage() }}
                 </p>
@@ -82,8 +82,35 @@
                             <span aria-hidden="true">&raquo;</span>
                         </span>
                     @endif
+
+                    {{-- GOTO PAGE --}}
+                    <input type="number" 
+                        class="ml-4 bg-gray-800 border border-gray-600 text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-16 p-2.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        aria-label="{{ __('Go to page') }}"
+                        min="1" max="{{ $paginator->lastPage() }}"
+                        value=""
+                        onchange="gotoPage(this.value)">
                 </span>
             </div>
         </div>
     </nav>
+
+    <script>
+        function gotoPage(value) {
+            // Ensure value is within valid range
+            value = Math.min(Math.max(1, parseInt(value) || 1), {{ $paginator->lastPage() }});
+            
+            // Get current URL and parameters
+            const url = new URL(window.location.href);
+            // Update page parameter
+            url.searchParams.set('page', value);
+            // Navigate to new URL
+            window.location.href = url.toString();
+        }
+
+        // Add event listener for blur
+        document.querySelector('input[type="number"]').addEventListener('blur', function() {
+            gotoPage(this.value);
+        });
+    </script>
 @endif 
