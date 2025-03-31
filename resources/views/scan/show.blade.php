@@ -94,6 +94,7 @@
             
             const formData = new FormData();
             formData.append('current_chapter', chapter);
+            formData.append('last_update', new Date().toISOString());
             formData.append('_token', '{{ csrf_token() }}');
 
             fetch('/scan/{{ $scan->id }}/update-chapter', {
