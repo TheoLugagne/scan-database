@@ -16,10 +16,16 @@ class ScanController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $scans = Auth::user()->scans()->latest('last_update')->get();
-        return view('scan.index', compact('scans'));
+        $perPage = $request->input('per_page', 12); // Default to 12
+        
+        $scans = Auth::user()->scans()
+            ->latest('last_update')
+            ->paginate($perPage)
+            ->withQueryString(); // This preserves other query parameters
+
+        return view('scan.index', compact('scans', 'perPage'));
     }
 
     /**

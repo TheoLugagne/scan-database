@@ -1,8 +1,20 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-white">
-            {{ __('My Scans') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-white">
+                {{ __('My Scans') }}
+            </h2>
+            
+            <div class="flex items-center space-x-2">
+                <label for="per_page" class="text-sm text-gray-300">Items per page:</label>
+                <input type="number" 
+                       id="per_page" 
+                       value="{{ $perPage }}"
+                       min="1"
+                       class="bg-gray-800 border border-gray-600 text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-16 p-2.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                       onchange="updatePerPage(this.value)">
+            </div>
+        </div>
     </x-slot>
 
     <div class="bg-gray-900 rounded-lg shadow-xl p-8">
@@ -84,10 +96,38 @@
                         </div>
                     @endforeach
                 </div>
+
+                <!-- Pagination -->
+                <div class="mt-6">
+                    {{ $scans->links() }}
+                </div>
             @endif
         </div>
     </div>
 
     <!-- Replace the existing modal with the component -->
     <x-delete-modal />
+
+    @push('scripts')
+    <script>
+        function updatePerPage(value) {
+            // Ensure the value is at least 1
+            value = Math.max(1, parseInt(value) || 12);
+            
+            // Get current URL
+            const url = new URL(window.location.href);
+            // Update or add the per_page parameter
+            url.searchParams.set('per_page', value);
+            // Reset to first page when changing items per page
+            url.searchParams.set('page', '1');
+            // Navigate to new URL
+            window.location.href = url.toString();
+        }
+
+        // Add event listener for blur (when input loses focus)
+        document.getElementById('per_page').addEventListener('blur', function() {
+            updatePerPage(this.value);
+        });
+    </script>
+    @endpush
 </x-app-layout> 
