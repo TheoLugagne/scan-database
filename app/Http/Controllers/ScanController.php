@@ -18,14 +18,26 @@ class ScanController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 12); // Default to 12
-        
+        $perPage = $request->input('per_page', 12);
         $scans = Auth::user()->scans()
             ->latest('last_update')
-            ->paginate($perPage)
-            ->withQueryString(); // This preserves other query parameters
+            ->paginate($perPage);
 
         return view('scan.index', compact('scans', 'perPage'));
+    }
+
+    public function fetch(Request $request)
+    {
+        // Clean and validate the per_page parameter
+        $perPage = (int) $request->input('per_page', 12);
+        // Ensure it's at least 1
+        $perPage = max(1, $perPage);
+
+        $scans = Auth::user()->scans()
+            ->latest('last_update')
+            ->paginate($perPage);
+
+        return view('scan.partials.scan-list', compact('scans'))->render();
     }
 
     /**
