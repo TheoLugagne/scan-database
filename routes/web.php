@@ -17,6 +17,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('scan', ScanController::class);
     Route::post('/scan/{scan}/update-chapter', [ScanController::class, 'updateChapter'])->name('scan.update-chapter');
+    Route::get('/scans/fetch', [ScanController::class, 'fetch'])->name('scans.fetch');
 });
 
 require __DIR__.'/auth.php';
