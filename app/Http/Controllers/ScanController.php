@@ -112,6 +112,13 @@ class ScanController extends Controller
     public function edit(Scan $scan)
     {
         $this->authorize('update', $scan);
+        
+        // Only store previous URL if it's not from the edit page
+        $previousUrl = url()->previous();
+        if (!str_contains($previousUrl, '/scan/' . $scan->id . '/edit')) {
+            session(['scan_previous_url' => $previousUrl]);
+        }
+        
         return view('scan.edit', compact('scan'));
     }
 
@@ -141,20 +148,40 @@ class ScanController extends Controller
             // Delete old image if exists
             if ($scan->cover_image) {
                 Storage::disk('public')->delete($scan->cover_image);
+                $path = $request->file('cover_image')->store('covers', 'public');
+                $validated['cover_image'] = $path;
             }
-            
-            $path = $request->file('cover_image')->store('covers', 'public');
-            $validated['cover_image'] = $path;
+        }
+        
+        // Check if any values are actually different
+        $hasChanges = false;
+        foreach ($validated as $field => $value) {
+            if ($scan->$field != $value) {
+                $hasChanges = true;
+                break;
+            }
+        }
+
+        // If no changes were made
+        if (!$hasChanges) {
+            return redirect()->back()
+                ->with('info', 'No changes were made to the scan.');
         }
 
         // Add timestamps
         $validated['last_update'] = now();
         
-        // Update the scan
-        $scan->update($validated);
-        
-        // Redirect back to the previous page
-        return redirect()->back()->with('success', 'Scan updated successfully');
+        try {
+            // Update the scan
+            $scan->update($validated);
+            
+            return redirect()->back()
+                ->with('success', 'Scan updated successfully!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to update scan. Please try again.')
+                ->withInput();
+        }
     }
 
     /**
