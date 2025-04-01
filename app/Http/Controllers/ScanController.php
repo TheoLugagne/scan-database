@@ -33,9 +33,19 @@ class ScanController extends Controller
         // Ensure it's at least 1
         $perPage = max(1, $perPage);
 
-        $scans = Auth::user()->scans()
-            ->latest('last_update')
-            ->paginate($perPage);
+        $search = $request->input('search', '');
+
+        if ($search) {
+            $scans = Auth::user()->scans()
+                ->where('title', 'like', '%' . $search . '%')
+                ->orWhere('link_to_scan', 'like', '%' . $search . '%')
+                ->latest('last_update')
+                ->paginate($perPage);
+        } else {
+            $scans = Auth::user()->scans()
+                ->latest('last_update')
+                ->paginate($perPage);
+        }
 
         return view('scan.partials.scan-list', compact('scans'))->render();
     }
