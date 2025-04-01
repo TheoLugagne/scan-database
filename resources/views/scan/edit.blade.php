@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="bg-gray-800 rounded-lg shadow-lg p-6">
-        <form method="POST" action="{{ route('scan.update', $scan) }}" class="space-y-6">
+        <form method="POST" action="{{ route('scan.update', $scan) }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
             
@@ -108,17 +108,29 @@
 
                 <div class="bg-gray-900 rounded-lg p-6">
                     <h3 class="text-white text-xl mb-4">Cover Image</h3>
-                    <input type="file" name="cover_image" id="cover_image" 
-                        value="{{ old('cover_image', $scan->cover_image) }}"
-                        class="mt-1 block w-full text-sm text-gray-300
-                        file:mr-4 file:py-2 file:px-4
-                        file:rounded-md file:border-0
-                        file:text-sm file:font-medium
-                        file:bg-gray-600 file:text-white
-                        hover:file:bg-gray-700">
-                    @error('cover_image')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
+                    <div>
+                        <label for="cover_image" class="block text-sm font-medium text-gray-300">Cover Image</label>
+                        <div class="mt-1 flex items-center">
+                            <input type="file" 
+                                   name="cover_image" 
+                                   id="cover_image" 
+                                   accept="image/*"
+                                   value="{{ old('cover_image', $scan->cover_image) }}"
+                                   class="block w-full text-sm text-gray-300
+                                          file:mr-4 file:py-2 file:px-4
+                                          file:rounded-md file:border-0
+                                          file:text-sm file:font-semibold
+                                          file:bg-indigo-600 file:text-white
+                                          hover:file:bg-indigo-700
+                                          file:cursor-pointer
+                                          border border-gray-600 rounded-md
+                                          bg-gray-800 
+                                          focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            @error('cover_image')
+                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
                     
                     @if($scan->cover_image)
                         <div class="mt-4">

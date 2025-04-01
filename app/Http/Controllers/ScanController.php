@@ -144,7 +144,7 @@ class ScanController extends Controller
             'link_to_scan' => 'nullable|url'
         ]);
 
-         if ($request->hasFile('cover_image')) {
+        if ($request->hasFile('cover_image')) {
             // Delete old image if exists
             if ($scan->cover_image) {
                 Storage::disk('public')->delete($scan->cover_image);
