@@ -109,6 +109,7 @@
                 <div class="bg-gray-900 rounded-lg p-6">
                     <h3 class="text-white text-xl mb-4">Cover Image</h3>
                     <input type="file" name="cover_image" id="cover_image" 
+                        value="{{ old('cover_image', $scan->cover_image) }}"
                         class="mt-1 block w-full text-sm text-gray-300
                         file:mr-4 file:py-2 file:px-4
                         file:rounded-md file:border-0
