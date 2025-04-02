@@ -66,132 +66,162 @@
 
     @push('scripts')
     <script>
-        function fetchScans(url = null) {
-            const perPage = document.getElementById('per_page').value || 12;
-            const search = document.getElementById('search').value || '';
-            const params = new URLSearchParams(window.location.search);
-            
-            params.set('per_page', perPage);
-            params.set('search', search);
-
-            document.getElementById('scans-container').classList.add('opacity-50');
-            
-            const fetchUrl = url || ('{{ route('scans.fetch') }}?' + params.toString());
-            
-            fetch(fetchUrl)
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('scans-container').innerHTML = html;
-                    
-                    // Reattach event listeners after content update
-                    document.querySelectorAll('[data-page-url]').forEach(button => {
-                        button.addEventListener('click', handlePaginationClick);
-                    });
-                    
-                    window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
-                })
-                .finally(() => {
-                    document.getElementById('scans-container').classList.remove('opacity-50');
-                });
-        }
-
-        function updateInput(per_page_input, search_input) {
-            per_page_value = Math.max(1, parseInt(per_page_input.value) || 12);
-            per_page_input.value = per_page_value;
-            per_page_input.blur();
-            search_input.blur();
-
-            const params = new URLSearchParams(window.location.search);
-            params.set('per_page', per_page_value);
-            params.set('page', '1'); // Reset to first page
-            params.set('search', search_input.value);
-            fetchScans('{{ route('scans.fetch') }}?' + params.toString());
-        }
-
-        // Handle both change and Enter key
-        const perPageInput = document.getElementById('per_page');
+        let searchTimeout;
         const searchInput = document.getElementById('search');
-
-        perPageInput.addEventListener('change', function() {
-            const searchInput = document.getElementById('search');
-            updateInput(this, searchInput);
-        });
-        perPageInput.addEventListener('keyup', function(event) {
-            if (event.key === 'Enter') {
-                const searchInput = document.getElementById('search');
-                updateInput(this, searchInput);
-            }
-        });
-        searchInput.addEventListener('change', function() {
-            const perPageInput = document.getElementById('per_page');
-            updateInput(perPageInput, this)
-        })
-        searchInput.addEventListener('keyup', function(event) {
-            if (event.key === 'Enter') {
-                const perPageInput = document.getElementById('per_page');
-                updateInput(perPageInput, this)
-            }
-        });
-
-        // Initial event listeners setup
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('[data-page-url]').forEach(button => {
-                button.addEventListener('click', handlePaginationClick);
-            });
-        });
-        
         const searchButton = document.getElementById('search-button');
         const searchIcon = document.getElementById('search-icon');
         const clearIcon = document.getElementById('clear-icon');
+        const perPageInput = document.getElementById('per_page');
+        const scansContainer = document.getElementById('scans-container');
 
-        // Function to toggle icons based on search input
-        function toggleSearchIcon() {
-            if (searchInput.value.length > 0) {
+        // Function to update URL parameters
+        function updateUrlParams(params) {
+            const url = new URL(window.location.href);
+            Object.entries(params).forEach(([key, value]) => {
+                if (value) {
+                    url.searchParams.set(key, value);
+                } else {
+                    url.searchParams.delete(key);
+                }
+            });
+            window.history.pushState({}, '', url);
+        }
+
+        // Function to get current page from URL
+        function getCurrentPage() {
+            const params = new URLSearchParams(window.location.search);
+            return parseInt(params.get('page')) || 1;
+        }
+
+        // Function to fetch scans with current parameters
+        function fetchScans() {
+            const params = new URLSearchParams(window.location.search);
+            const search = searchInput.value;
+            const perPage = perPageInput.value;
+            const currentPage = getCurrentPage();
+            
+            if (search) params.set('search', search);
+            else params.delete('search');
+            
+            params.set('per_page', perPage);
+            params.set('page', currentPage);
+            
+            // Update URL without triggering a page reload
+            updateUrlParams({
+                search: search || null,
+                per_page: perPage || 12,
+                page: currentPage || 1
+            });
+
+            // Fetch new content
+            fetch(`{{ route('scans.fetch') }}?${params.toString()}`)
+                .then(response => response.text())
+                .then(html => {
+                    scansContainer.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error fetching scans:', error);
+                    scansContainer.innerHTML = '<div class="text-center py-8"><p class="text-red-400">Error loading scans. Please try again.</p></div>';
+                });
+        }
+
+        // Function to handle page navigation
+        function gotoPage(value) {
+            value = Math.min(Math.max(1, parseInt(value) || 1), parseInt(document.getElementById('goto-page').max));
+            updateUrlParams({ page: value });
+            fetchScans();
+        }
+
+        // Handle search input with debounce
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                // Reset to first page when searching
+                updateUrlParams({ page: 1 });
+                fetchScans();
+            }, 500);
+
+            // Toggle clear button visibility
+            if (this.value) {
                 searchIcon.classList.add('hidden');
                 clearIcon.classList.remove('hidden');
             } else {
                 searchIcon.classList.remove('hidden');
                 clearIcon.classList.add('hidden');
             }
-        }
-
-        // Function to perform search
-        function performSearch() {
-            const params = new URLSearchParams(window.location.search);
-            if (searchInput.value.trim()) {
-                params.set('search', searchInput.value.trim());
-            } else {
-                params.delete('search');
-            }
-            params.set('page', '1'); // Reset to first page on search
-            fetchScans('{{ route('scans.fetch') }}?' + params.toString());
-        }
-
-        // Handle input changes
-        searchInput.addEventListener('input', toggleSearchIcon);
-
-        // Handle enter key
-        searchInput.addEventListener('keyup', function(event) {
-            if (event.key === 'Enter') {
-                performSearch();
-            }
         });
 
-        // Handle button click
+        // Handle clear search button
         searchButton.addEventListener('click', function() {
-            if (searchInput.value.length > 0) {
-                // Clear search if there's text
+            if (searchInput.value) {
                 searchInput.value = '';
-                toggleSearchIcon();
-                performSearch();
-            } else {
-                // Perform search if empty
-                performSearch();
+                searchIcon.classList.remove('hidden');
+                clearIcon.classList.add('hidden');
+                // Reset to first page when clearing search
+                updateUrlParams({ page: 1 });
+                fetchScans();
             }
         });
 
-        // Initialize icon state
-        toggleSearchIcon();
+        // Handle per page input
+        perPageInput.addEventListener('change', function() {
+            // Ensure value is at least 1
+            this.value = Math.max(1, parseInt(this.value) || 12);
+            // Reset to first page when changing items per page
+            updateUrlParams({ page: 1 });
+            fetchScans();
+        });
+
+        // Handle pagination clicks
+        document.addEventListener('click', function(event) {
+            const link = event.target.closest('[data-page-url]');
+            if (link) {
+                event.preventDefault();
+                const url = new URL(link.dataset.pageUrl);
+                const params = new URLSearchParams(url.search);
+                const page = params.get('page');
+                
+                // Preserve current search and per_page values
+                if (searchInput.value) params.set('search', searchInput.value);
+                params.set('per_page', perPageInput.value);
+                
+                // Update URL and fetch
+                updateUrlParams({
+                    page: page,
+                    search: searchInput.value || null,
+                    per_page: perPageInput.value
+                });
+                
+                fetchScans();
+            }
+        });
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', function() {
+            const params = new URLSearchParams(window.location.search);
+            searchInput.value = params.get('search') || '';
+            perPageInput.value = params.get('per_page') || 12;
+            
+            // Update search icon state
+            if (searchInput.value) {
+                searchIcon.classList.add('hidden');
+                clearIcon.classList.remove('hidden');
+            } else {
+                searchIcon.classList.remove('hidden');
+                clearIcon.classList.add('hidden');
+            }
+            
+            fetchScans();
+        });
+
+        // Initialize page from URL on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const page = params.get('page');
+            if (page) {
+                updateUrlParams({ page: page });
+            }
+        });
     </script>
     @endpush
 </x-app-layout> 
