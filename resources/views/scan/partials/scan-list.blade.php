@@ -22,7 +22,7 @@
                     @endif
                     <div class="flex items-center justify-between text-sm text-gray-400">
                         <span>Chapter {{ $scan->current_chapter }}</span>
-                        <span>{{ $scan->create_date->format('M d, Y') }}</span>
+                        <span>{{ $scan->last_update->format('M d, Y') }}</span>
                     </div>
                     @if($scan->link_to_scan)
                         <div class="mt-4">
