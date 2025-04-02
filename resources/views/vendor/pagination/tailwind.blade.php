@@ -61,47 +61,8 @@
                         aria-label="{{ __('Go to last page') }}">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
-
-                    {{-- Page Input --}}
-                    
-                    </span>
+                </span>
             </div>
         </div>
     </nav>
-
-    <script>
-        function handlePaginationClick(event) {
-            const link = event.target.closest('[data-page-url]');
-            if (link) {
-                event.preventDefault();
-                
-                // Get current URL parameters
-                const currentParams = new URLSearchParams(window.location.search);
-                // Get the new URL from the pagination link
-                const newUrl = new URL(link.dataset.pageUrl);
-                const newParams = new URLSearchParams(newUrl.search);
-                
-                // Preserve all existing parameters except page and per_page
-                for (const [key, value] of currentParams.entries()) {
-                    if (key !== 'page' && key !== 'per_page') {
-                        newParams.set(key, value);
-                    }
-                }
-                
-                // Update the URL with all parameters
-                fetchScans(`${newUrl.pathname}?${newParams.toString()}`);
-            }
-        }
-
-        function gotoPage(value) {
-            value = Math.min(Math.max(1, parseInt(value) || 1), {{ $paginator->lastPage() }});
-            const currentPerPage = document.getElementById('per_page').value || {{ request('per_page', 12) }};
-            
-            const params = new URLSearchParams(window.location.search);
-            params.set('page', value);
-            params.set('per_page', currentPerPage);
-            
-            fetchScans('{{ route('scans.fetch') }}?' + params.toString());
-        }
-    </script>
 @endif 
