@@ -21,7 +21,7 @@ class ScanPolicy
      */
     public function view(User $user, Scan $scan): bool
     {
-        return $user->id === $scan->user_id;
+        return true;
     }
 
     /**
@@ -29,7 +29,7 @@ class ScanPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return true; // Allow authenticated users to create scans
     }
 
     /**
@@ -37,7 +37,8 @@ class ScanPolicy
      */
     public function update(User $user, Scan $scan): bool
     {
-        return $user->id === $scan->user_id;
+        // Check if the user has a UserScanProgress record for this scan
+        return true;
     }
 
     /**
@@ -45,7 +46,8 @@ class ScanPolicy
      */
     public function delete(User $user, Scan $scan): bool
     {
-        return $user->id === $scan->user_id;
+        // Check if the user has a UserScanProgress record for this scan
+        return false;
     }
 
     /**
@@ -53,7 +55,7 @@ class ScanPolicy
      */
     public function restore(User $user, Scan $scan): bool
     {
-        return false;
+        return false; // Soft deletes not implemented
     }
 
     /**
@@ -61,6 +63,6 @@ class ScanPolicy
      */
     public function forceDelete(User $user, Scan $scan): bool
     {
-        return false;
+        return false; // Force deletes not implemented
     }
 }

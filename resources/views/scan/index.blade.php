@@ -4,7 +4,7 @@
             {{-- Left side with responsive width --}}
             <div class="w-24 sm:w-48">
                 <h2 class="font-semibold text-xl text-white whitespace-nowrap">
-                    {{ __('My Scans') }}
+                    {{ __('Scans') }}
                 </h2>
             </div>
             

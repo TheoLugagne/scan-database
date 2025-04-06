@@ -21,4 +21,9 @@ class Scan extends Model
         'cover_image',
         'link_to_scan',
     ];
+
+    public function userScanProgress()
+    {
+        return $this->hasMany(UserScanProgress::class);
+    }
 }
