@@ -28,7 +28,7 @@
             </div>
         @endif
         
-        <form action="{{ route('scan.store') }}" method="POST" class="space-y-8" enctype="multipart/form-data" novalidate>
+        <form action="{{ route('scan.store') }}" method="POST" class="space-y-8" enctype="multipart/form-data">
             @csrf
             
             <div>
