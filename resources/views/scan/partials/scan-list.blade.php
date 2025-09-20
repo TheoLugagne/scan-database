@@ -30,11 +30,6 @@
                                 </svg>
                                 View Scan
                             </a>
-                            <span>{{ $scan->updated_at->format('M d, Y') }}</span>
-                        </div>
-                    @else
-                        <div class="flex items-center justify-end text-sm text-gray-400">
-                            <span>{{ $scan->updated_at->format('M d, Y') }}</span>
                         </div>
                     @endif
                     <div class="mt-4 flex justify-end space-x-2">
