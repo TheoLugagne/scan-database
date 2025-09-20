@@ -13,7 +13,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+    Route::get('/userScanProgress/fetch', [UserScanProgressController::class, 'fetch'])->name('userScanProgress.fetch');
     Route::resource('userScanProgress', UserScanProgressController::class);
+    Route::get('/userScanProgress/create/{scan}', [UserScanProgressController::class, 'create'])->name('userScanProgress.create');
     Route::post('/userScanProgress/{userScanProgress}/update-chapter', [UserScanProgressController::class, 'updateChapter'])->name('userScanProgress.update-chapter');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -114,7 +114,7 @@
             });
 
             // Fetch new content
-            fetch(`{{ route('scans.fetch') }}?${params.toString()}`)
+            fetch(`{{ route('userScanProgress.fetch') }}?${params.toString()}`)
                 .then(response => response.text())
                 .then(html => {
                     scansContainer.innerHTML = html;
