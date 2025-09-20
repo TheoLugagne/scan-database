@@ -20,8 +20,9 @@ class UserScanProgressController extends Controller
         $this->authorize('viewAny', UserScanProgress::class);
         $perPage = $request->input('per_page', 12);
         
-        // Get all scans and paginate them
-        $userScanProgress = UserScanProgress::latest('updated_at')
+        // Get only the authenticated user's scan progress
+        $userScanProgress = UserScanProgress::where('user_id', Auth::id())
+            ->latest('updated_at')
             ->paginate($perPage);
             
         return view('userScanProgress.index', compact('userScanProgress', 'perPage'));
@@ -48,17 +49,18 @@ class UserScanProgressController extends Controller
             });
         }
 
-        $scans = $query->latest('scans.updated_at')
+        $userScanProgress = $query->latest('scans.updated_at')
             ->select('user_scan_progress.*')
             ->paginate($perPage);
 
-        return view('scan.partials.scan-list', compact('scans'))->render();
+        return view('userScanProgress.partials.scan-progress-list', compact('userScanProgress'))->render();
     }
 
     public function create(Scan $scan)
     {
         $this->authorize('create', UserScanProgress::class);
-        return view('userScanProgress.create', compact('scan'));
+        $user = Auth::user();
+        return view('userScanProgress.create', compact('scan', 'user'));
     }
 
     public function store(Request $request)
@@ -69,8 +71,8 @@ class UserScanProgressController extends Controller
             'current_chapter' => 'required|numeric|min:0',
         ]);
         
-        UserScanProgress::create($validated);
-        return true;
+        $userScanProgress = UserScanProgress::create($validated);
+        return redirect()->route('userScanProgress.show', $userScanProgress->id);
     }
 
     public function show(UserScanProgress $userScanProgress)
@@ -82,7 +84,8 @@ class UserScanProgressController extends Controller
     public function edit(UserScanProgress $userScanProgress)
     {
         $this->authorize('update', $userScanProgress);
-        return view('userScanProgress.edit', compact('userScanProgress'));
+        $user = Auth::user();
+        return view('userScanProgress.edit', compact('userScanProgress', 'user'));
     }
 
     public function update(Request $request, UserScanProgress $userScanProgress)
