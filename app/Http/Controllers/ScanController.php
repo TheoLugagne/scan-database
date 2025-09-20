@@ -138,7 +138,7 @@ class ScanController extends Controller
         $this->authorize('update', $scan);
 
         $validated = $request->validate([
-            'title' => 'unique:scans,title|required|string|max:255',
+            'title' => 'required|string|max:255',
             'summary' => 'nullable|string',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'link_to_scan' => 'nullable|url'
