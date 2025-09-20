@@ -72,7 +72,7 @@ class UserScanProgressController extends Controller
         ]);
         
         $userScanProgress = UserScanProgress::create($validated);
-        return redirect()->route('userScanProgress.show', $userScanProgress->id);
+        return redirect()->route('scan.index');
     }
 
     public function show(UserScanProgress $userScanProgress)
@@ -94,8 +94,27 @@ class UserScanProgressController extends Controller
         $validated = $request->validate([
             'current_chapter' => 'required|numeric|min:0',
         ]);
-        $userScanProgress->update($validated);
-        return redirect()->route('userScanProgress.index');
+
+        // Check if any values are actually different
+        $hasChanges = false;
+        foreach ($validated as $field => $value) {
+            if ($userScanProgress->$field != $value) {
+                $hasChanges = true;
+                break;
+            }
+        }
+        // If no changes were made
+        if (!$hasChanges) {
+            return redirect()->back()
+                ->with('info', 'No changes were made to the scan progress.');
+        }
+
+        try{
+            $userScanProgress->update($validated);
+            return redirect()->back()->with('success', 'Scan updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update scan');
+        }
     }
 
     public function destroy(UserScanProgress $userScanProgress)
