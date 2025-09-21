@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\UserScanProgress;
 
 class ScanController extends Controller
 {
@@ -19,10 +20,10 @@ class ScanController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 12);
-        $scans = Auth::user()->scans()
-            ->latest('last_update')
-            ->paginate($perPage);
-
+        
+        // Get all scans and paginate them
+        $scans = Scan::latest('updated_at')->paginate($perPage);
+        
         return view('scan.index', compact('scans', 'perPage'));
     }
 
@@ -35,17 +36,17 @@ class ScanController extends Controller
 
         $search = $request->input('search', '');
 
+        $query = Scan::query();
+
         if ($search) {
-            $scans = Auth::user()->scans()
-                ->where('title', 'like', '%' . $search . '%')
-                ->orWhere('link_to_scan', 'like', '%' . $search . '%')
-                ->latest('last_update')
-                ->paginate($perPage);
-        } else {
-            $scans = Auth::user()->scans()
-                ->latest('last_update')
-                ->paginate($perPage);
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                  ->orWhere('link_to_scan', 'like', '%' . $search . '%');
+            });
         }
+
+        $scans = $query->latest('updated_at')
+            ->paginate($perPage);
 
         return view('scan.partials.scan-list', compact('scans'))->render();
     }
@@ -63,38 +64,47 @@ class ScanController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('scans')->where(function ($query) {
-                    return $query->where('user_id', auth()->id());
-                })
-            ],
-            'summary' => 'nullable|string',
-            'current_chapter' => 'required|numeric|min:0',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'link_to_scan' => 'nullable|url'
-        ]);
+        try {
+            $validated = $request->validate([
+                'title' => 'unique:scans,title|required|string|max:255',
+                'summary' => 'nullable|string',
+                'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'link_to_scan' => 'nullable|url'
+            ]);
 
-        $validated['user_id'] = auth()->id();
+            $validated['user_id'] = auth()->id();
 
-        if ($request->hasFile('cover_image')) {
-            $image = $request->file('cover_image');
-            $path = $image->store('images', 'public');
-            $validated['cover_image'] = $path;
+            if ($request->hasFile('cover_image')) {
+                $image = $request->file('cover_image');
+                $path = $image->store('images', 'public');
+                $validated['cover_image'] = $path;
+            }
+
+            // Create the scan record
+            $scan = Scan::create($validated);
+            
+            if (auth()->check()) {
+                // create user scan progress record via controller
+                $userScanProgress = new UserScanProgressController();
+                $request = new Request([
+                    'user_id' => auth()->id(),
+                    'scan_id' => $scan->id,
+                    'current_chapter' => $request->input('current_chapter', 0)
+                ]);
+                $userScanProgress->store($request);
+            }
+
+            return redirect()->route('scan.index')
+                ->with('success', 'Scan created successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'An error occurred while creating the scan.'])
+                ->withInput();
         }
-
-        // Add timestamps
-        $validated['create_date'] = now();
-        $validated['last_update'] = now();
-
-        // Create the scan record
-        $scan = Scan::create($validated);
-
-        return redirect()->route('scan.index')
-            ->with('success', 'Scan created successfully.');
     }
 
     /**
@@ -130,16 +140,8 @@ class ScanController extends Controller
         $this->authorize('update', $scan);
 
         $validated = $request->validate([
-            'title' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('scans')->where(function ($query) {
-                    return $query->where('user_id', auth()->id());
-                })->ignore($scan->id)
-            ],
+            'title' => 'required|string|max:255',
             'summary' => 'nullable|string',
-            'current_chapter' => 'required|numeric|min:0',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'link_to_scan' => 'nullable|url'
         ]);
@@ -168,14 +170,10 @@ class ScanController extends Controller
             return redirect()->back()
                 ->with('info', 'No changes were made to the scan.');
         }
-
-        // Add timestamps
-        $validated['last_update'] = now();
         
         try {
             // Update the scan
             $scan->update($validated);
-            
             return redirect()->back()
                 ->with('success', 'Scan updated successfully!');
         } catch (\Exception $e) {
@@ -195,42 +193,7 @@ class ScanController extends Controller
         if ($scan->cover_image) {
             Storage::disk('public')->delete($scan->cover_image);
         }
-        Scan::destroy($scan->id);
+        $scan->delete();
         return redirect()->route('scan.index')->with('success', 'Scan removed successfully.');
-    }
-
-    /**
-     * Check if a title already exists
-     */
-    public function checkTitle(Request $request)
-    {
-        $exists = Scan::where('title', $request->title)->exists();
-        return response()->json(['exists' => $exists]);
-    }
-
-    public function updateChapter(Request $request, Scan $scan)
-    {
-        $this->authorize('update', $scan);
-        try {
-            $validated = $request->validate([
-                'current_chapter' => 'required|numeric|min:0',
-                'last_update' => 'required|date'
-            ]);
-
-            $scan->update([
-                'current_chapter' => $validated['current_chapter'],
-                'last_update' => $validated['last_update']
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Chapter updated successfully'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error updating chapter'
-            ], 500);
-        }
     }
 }

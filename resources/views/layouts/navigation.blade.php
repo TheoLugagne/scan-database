@@ -5,7 +5,7 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="text-2xl font-bold text-white">
+                    <a href="{{ route('scan.index') }}" class="text-2xl font-bold text-white">
                         {{ config('app.name') }}
                     </a>
                 </div>
@@ -17,7 +17,7 @@
                             class="text-gray-300 hover:text-white">
                             {{ __('Dashboard') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('scan.index')" :active="request()->routeIs('scan.index')"
+                        <x-nav-link :href="route('userScanProgress.index')"
                             class="text-gray-300 hover:text-white">
                             {{ __('My Scans') }}
                         </x-nav-link>

@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -46,8 +47,22 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Get the user progress for this scan.
+     */
     public function scans()
     {
-        return $this->hasMany(Scan::class);
+        return $this->hasMany(UserScanProgress::class);
+    }
+
+    public function getCurrentChapterForScan($scanId)
+    {
+        return $this->scans()
+            ->where('scan_id', $scanId)
+            ->value('current_chapter');
+    }
+
+    public function users() {
+        return $this->where('role', 'user');
     }
 }

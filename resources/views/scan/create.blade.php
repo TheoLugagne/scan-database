@@ -28,7 +28,7 @@
             </div>
         @endif
         
-        <form action="{{ route('scan.store') }}" method="POST" class="space-y-8" enctype="multipart/form-data" novalidate>
+        <form action="{{ route('scan.store') }}" method="POST" class="space-y-8" enctype="multipart/form-data">
             @csrf
             
             <div>
@@ -53,30 +53,6 @@
                 <p class="mt-1 text-sm text-gray-400">Optional</p>
             </div>
 
-            <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label for="current_chapter" class="block text-base font-medium text-gray-300">Current Chapter</label>
-                    <input type="number" name="current_chapter" id="current_chapter" required
-                        min="0" step="0.5"
-                        value="0"
-                        class="mt-2 block w-full rounded-md bg-gray-800 border-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base p-2 @error('current_chapter') border-red-500 @enderror">
-                    @error('current_chapter')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                    @enderror
-                    <p class="mt-1 text-sm text-gray-400">Required, must be 0 or greater</p>
-                </div>
-
-                <div>
-                    <label for="cover_image" class="block text-base font-medium text-gray-300">Cover Image</label>
-                    <input type="file" name="cover_image" id="cover_image" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
-                        class="mt-2 block w-full text-base text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-base file:font-medium file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 @error('cover_image') border-red-500 @enderror">
-                    @error('cover_image')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                    @enderror
-                    <p class="mt-1 text-sm text-gray-400">Optional, max 2MB, JPG/PNG/GIF/WEBP only</p>
-                </div>
-            </div>
-
             <div>
                 <label for="link_to_scan" class="block text-base font-medium text-gray-300">Link to Scan</label>
                 <input type="url" name="link_to_scan" id="link_to_scan"
@@ -87,6 +63,18 @@
                     <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                 @enderror
                 <p class="mt-1 text-sm text-gray-400">Optional, must be a valid URL</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label for="cover_image" class="block text-base font-medium text-gray-300">Cover Image</label>
+                    <input type="file" name="cover_image" id="cover_image" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
+                        class="mt-2 block w-full text-base text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-base file:font-medium file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 @error('cover_image') border-red-500 @enderror">
+                    @error('cover_image')
+                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-sm text-gray-400">Optional, max 2MB, JPG/PNG/GIF/WEBP only</p>
+                </div>
             </div>
 
             <div class="flex items-center justify-end space-x-4 pt-4">

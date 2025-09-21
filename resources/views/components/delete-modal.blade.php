@@ -34,7 +34,7 @@
 </div>
 
 <script>
-function showDeleteModal(scanId, scanTitle) {
+function showDeleteScanModal(scanId, scanTitle) {
     const modal = document.getElementById('deleteModal');
     const modalContent = modal.querySelector('div');
     const form = document.getElementById('deleteForm');
@@ -42,6 +42,21 @@ function showDeleteModal(scanId, scanTitle) {
     
     titleSpan.textContent = scanTitle;
     form.action = `/scan/${scanId}`;
+    
+    modal.classList.remove('hidden');
+    modal.offsetHeight;
+    modal.classList.add('bg-opacity-50');
+    modalContent.classList.remove('scale-0', 'opacity-0');
+}
+
+function showDeleteUserScanProgressModal(scanId, scanTitle) {
+    const modal = document.getElementById('deleteModal');
+    const modalContent = modal.querySelector('div');
+    const form = document.getElementById('deleteForm');
+    const titleSpan = document.getElementById('deleteScanTitle');
+    
+    titleSpan.textContent = scanTitle;
+    form.action = `/userScanProgress/${scanId}`;
     
     modal.classList.remove('hidden');
     modal.offsetHeight;
