@@ -82,15 +82,17 @@ class ScanController extends Controller
 
             // Create the scan record
             $scan = Scan::create($validated);
-
-            // create user scan progress record via controller
-            $userScanProgress = new UserScanProgressController();
-            $request = new Request([
-                'user_id' => auth()->id(),
-                'scan_id' => $scan->id,
-                'current_chapter' => $request->input('current_chapter', 0)
-            ]);
-            $userScanProgress->store($request);
+            
+            if (auth()->check()) {
+                // create user scan progress record via controller
+                $userScanProgress = new UserScanProgressController();
+                $request = new Request([
+                    'user_id' => auth()->id(),
+                    'scan_id' => $scan->id,
+                    'current_chapter' => $request->input('current_chapter', 0)
+                ]);
+                $userScanProgress->store($request);
+            }
 
             return redirect()->route('scan.index')
                 ->with('success', 'Scan created successfully.');

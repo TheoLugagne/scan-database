@@ -47,7 +47,7 @@ class ScanPolicy
     public function delete(User $user, Scan $scan): bool
     {
         // Check if the user has a UserScanProgress record for this scan
-        return false;
+        return $user->role === 'admin';
     }
 
     /**

@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -59,5 +60,9 @@ class User extends Authenticatable
         return $this->scans()
             ->where('scan_id', $scanId)
             ->value('current_chapter');
+    }
+
+    public function users() {
+        return $this->where('role', 'user');
     }
 }
