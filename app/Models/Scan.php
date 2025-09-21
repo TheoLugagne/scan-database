@@ -26,4 +26,8 @@ class Scan extends Model
     {
         return $this->hasMany(UserScanProgress::class);
     }
+
+    public function genders() {
+        return $this->hasMany(Gender::class);
+    }
 }
