@@ -92,7 +92,7 @@
                     class="text-gray-300 hover:text-white hover:bg-gray-700">
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('scan.index')" :active="request()->routeIs('scan.index')"
+                <x-responsive-nav-link :href="route('userScanProgress.index')" :active="request()->routeIs('userScanProgress.index')"
                     class="text-gray-300 hover:text-white hover:bg-gray-700">
                     {{ __('My Scans') }}
                 </x-responsive-nav-link>
