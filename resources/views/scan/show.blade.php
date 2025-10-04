@@ -25,6 +25,12 @@
                         <p class="text-white">{{ $scan->summary ?? 'No summary available' }}</p>
                     </div>
 
+                    {{-- Gender Pills --}}
+                    <div class="border-b border-gray-700 pb-4 mb-6 text-center flex flex-col items-center">
+                        <h3 class="text-gray-400 text-sm mb-2">Genders</h3>
+                        <x-m2m.pills :elts="$scan->genders" :title="'Genders'"/>
+                    </div>
+
                     <div class="border-b border-gray-700 pb-4 mb-6 text-center">
                         <h3 class="text-gray-400 text-sm mb-2">Link to Scan</h3>
                         @if($scan->link_to_scan)

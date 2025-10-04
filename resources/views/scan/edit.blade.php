@@ -62,6 +62,12 @@
                         @enderror
                     </div>
 
+                    <!-- Genders -->
+                    <div class="border-b border-gray-700 pb-4">
+                        <h3 class="text-gray-400 text-sm">Genders</h3>
+                        <x-m2m.pills_selector :elts="$genders" :selected_elts="$scan->genders" :title="'Genders'" :field_name="'gender_ids'" />
+                    </div>
+
                     <!-- Link to Scan -->
                     <div class="border-b border-gray-700 pb-4">
                         <h3 class="text-gray-400 text-sm">Link to Scan</h3>

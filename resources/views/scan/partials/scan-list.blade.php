@@ -20,6 +20,10 @@
                     @if($scan->summary)
                         <p class="text-gray-400 text-sm mb-4 line-clamp-3">{{ $scan->summary }}</p>
                     @endif
+                    
+                    {{-- Gender Pills --}}
+                    <x-m2m.pills :elts="$scan->genders" :title="'Genders'" />
+
                     @if($scan->link_to_scan)
                         <div class="flex items-center justify-between text-sm text-gray-400">
                             <a href="{{ $scan->link_to_scan }}"

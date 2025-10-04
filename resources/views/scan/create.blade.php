@@ -53,6 +53,8 @@
                 <p class="mt-1 text-sm text-gray-400">Optional</p>
             </div>
 
+            <x-m2m.pills_selector :elts="$genders" :selected_elts="[]" :title="'Genders'" :field_name="'gender_ids'" />
+            
             <div>
                 <label for="link_to_scan" class="block text-base font-medium text-gray-300">Link to Scan</label>
                 <input type="url" name="link_to_scan" id="link_to_scan"

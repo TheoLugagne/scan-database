@@ -28,6 +28,6 @@ class Scan extends Model
     }
 
     public function genders() {
-        return $this->hasMany(Gender::class);
+        return $this->belongsToMany(Gender::class);
     }
 }

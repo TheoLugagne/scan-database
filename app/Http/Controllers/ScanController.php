@@ -9,6 +9,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\UserScanProgress;
+use App\Models\Gender;
+use Illuminate\Support\Facades\Log;
 
 class ScanController extends Controller
 {
@@ -21,8 +23,8 @@ class ScanController extends Controller
     {
         $perPage = $request->input('per_page', 12);
         
-        // Get all scans and paginate them
-        $scans = Scan::latest('updated_at')->paginate($perPage);
+        // Get all scans with genders and paginate them
+        $scans = Scan::with('genders')->latest('updated_at')->paginate($perPage);
         
         return view('scan.index', compact('scans', 'perPage'));
     }
@@ -45,7 +47,7 @@ class ScanController extends Controller
             });
         }
 
-        $scans = $query->latest('updated_at')
+        $scans = $query->with('genders')->latest('updated_at')
             ->paginate($perPage);
 
         return view('scan.partials.scan-list', compact('scans'))->render();
@@ -56,7 +58,8 @@ class ScanController extends Controller
      */
     public function create()
     {
-        return view('scan.create');
+        $genders = Gender::all();
+        return view('scan.create', ['genders' => $genders]);
     }
 
     /**
@@ -69,19 +72,26 @@ class ScanController extends Controller
                 'title' => 'unique:scans,title|required|string|max:255',
                 'summary' => 'nullable|string',
                 'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-                'link_to_scan' => 'nullable|url'
+                'link_to_scan' => 'nullable|url',
+                'gender_ids' => 'nullable|string|regex:/^\d+(,\d+)*$/',
             ]);
 
             $validated['user_id'] = auth()->id();
-
+            
             if ($request->hasFile('cover_image')) {
                 $image = $request->file('cover_image');
                 $path = $image->store('images', 'public');
                 $validated['cover_image'] = $path;
             }
-
+            
             // Create the scan record
             $scan = Scan::create($validated);
+            
+            // attach genders to the scan
+            if (!empty($validated['gender_ids'])) {
+                $validated['gender_ids'] = explode(',', $validated['gender_ids']);
+                $scan->genders()->attach($validated['gender_ids']);
+            }
             
             if (auth()->check()) {
                 // create user scan progress record via controller
@@ -113,6 +123,7 @@ class ScanController extends Controller
     public function show(Scan $scan)
     {
         $this->authorize('view', $scan);
+        $scan->load('genders');
         return view('scan.show', compact('scan'));
     }
 
@@ -128,8 +139,9 @@ class ScanController extends Controller
         if (!str_contains($previousUrl, '/scan/' . $scan->id . '/edit')) {
             session(['scan_previous_url' => $previousUrl]);
         }
+        $genders = Gender::all();
         
-        return view('scan.edit', compact('scan'));
+        return view('scan.edit', compact('scan', 'genders'));
     }
 
     /**
@@ -143,7 +155,8 @@ class ScanController extends Controller
             'title' => 'required|string|max:255',
             'summary' => 'nullable|string',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'link_to_scan' => 'nullable|url'
+            'link_to_scan' => 'nullable|url',
+            'gender_ids' => 'nullable|string|regex:/^\d+(,\d+)*$/',
         ]);
 
         if ($request->hasFile('cover_image')) {
@@ -159,9 +172,23 @@ class ScanController extends Controller
         // Check if any values are actually different
         $hasChanges = false;
         foreach ($validated as $field => $value) {
-            if ($scan->$field != $value) {
-                $hasChanges = true;
-                break;
+            if ($field === 'gender_ids') {
+                // Special handling for gender_ids - compare with actual relationships
+                $currentGenderIds = $scan->genders->pluck('id')->sort()->values()->toArray();
+                $newGenderIds = is_array($value) ? $value : explode(',', $value);
+                $newGenderIds = array_map('intval', $newGenderIds);
+                sort($newGenderIds);
+                
+                if ($currentGenderIds !== $newGenderIds) {
+                    $hasChanges = true;
+                    break;
+                }
+            } else {
+                // Regular field comparison
+                if ($scan->$field != $value) {
+                    $hasChanges = true;
+                    break;
+                }
             }
         }
 
@@ -174,6 +201,11 @@ class ScanController extends Controller
         try {
             // Update the scan
             $scan->update($validated);
+            // update genders
+            if (!empty($validated['gender_ids'])) {
+                $validated['gender_ids'] = explode(',', $validated['gender_ids']);
+                $scan->genders()->sync($validated['gender_ids']);
+            }
             return redirect()->back()
                 ->with('success', 'Scan updated successfully!');
         } catch (\Exception $e) {
