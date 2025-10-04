@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Database\Seeders\GenderSeeder;
 
 return new class extends Migration
 {
@@ -12,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('genders', function (Blueprint $table) {
+        Schema::create('gender_scan', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->foreignId('gender_id')->constrained()->onDelete('cascade');
+            $table->foreignId('scan_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+            
+            // Ensure unique combinations
+            $table->unique(['gender_id', 'scan_id']);
         });
-
-        GenderSeeder::run();
     }
 
     /**
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('genders');
+        Schema::dropIfExists('gender_scan');
     }
 };
