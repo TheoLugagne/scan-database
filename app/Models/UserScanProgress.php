@@ -10,6 +10,11 @@ class UserScanProgress extends Model
         'user_id',
         'scan_id',
         'current_chapter',
+        'reading_status',
+    ];
+
+    protected $casts = [
+        'reading_status' => ReadingStatus::class,
     ];
 
     public function user()
