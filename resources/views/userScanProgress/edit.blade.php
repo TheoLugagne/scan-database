@@ -1,8 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-white">
-            {{ __('Edit') }} - {{ $userScanProgress->scan->title }}
-        </h2>
+        <div class="flex items-center justify-between gap-2">
+            <h2 class="font-semibold text-xl text-white">
+                {{ __('Edit') }} - {{ $userScanProgress->scan->title }}
+            </h2>
+            <x-m2o.pill :elt="$userScanProgress->scan->status" />
+        </div>
     </x-slot>
 
     <div class="bg-gray-800 rounded-lg shadow-lg p-6">
@@ -56,7 +59,7 @@
                         <h3 class="text-gray-400 text-sm">Title</h3>
                         <input readonly type="text" name="title" id="title" 
                             value="{{ old('title', $userScanProgress->scan->title) }}"
-                            class="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 text-base">
+                            class="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm px-3 py-2 text-base">
                     </div>
 
                     <!-- Current Chapter -->
@@ -75,14 +78,14 @@
                         <h3 class="text-gray-400 text-sm">Link to Scan</h3>
                         <input readonly type="url" name="link_to_scan" id="link_to_scan" 
                             value="{{ old('link_to_scan', $userScanProgress->scan->link_to_scan) }}"
-                            class="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 text-base">
+                            class="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm px-3 py-2 text-base">
                     </div>
 
                     <!-- Summary -->
                     <div class="border-b border-gray-700 pb-4">
                         <h3 class="text-gray-400 text-sm">Summary</h3>
                         <textarea readonly name="summary" id="summary" rows="4"
-                            class="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 text-base">{{ old('summary', $userScanProgress->scan->summary) }}</textarea>
+                            class="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm px-3 py-2 text-base">{{ old('summary', $userScanProgress->scan->summary) }}</textarea>
                     </div>
 
                     <div class="pt-4 flex space-x-4">
@@ -97,16 +100,20 @@
                     </div>
                 </div>
 
-                <div class="bg-gray-900 rounded-lg p-6">
-                    <h3 class="text-white text-xl mb-4">Cover Image</h3>
-                    
-                    @if($userScanProgress->scan->cover_image)
-                        <div class="mt-4">
-                            <img src="{{ asset('storage/' . $userScanProgress->scan->cover_image) }}" 
-                                alt="Current cover" 
-                                class="max-w-full h-96 object-contain rounded">
-                        </div>
-                    @endif
+                <div class="flex flex-col h-full">
+                    <!-- Reading Status -->
+                    <x-m2o.statusbar :elts="$reading_status_list" :selected="$userScanProgress->reading_status" :field_name="'reading_status'" />
+                    <div class="bg-gray-900 rounded-lg p-6 flex-1">
+                        <h3 class="text-white text-xl mb-4">Cover Image</h3>
+                        
+                        @if($userScanProgress->scan->cover_image)
+                            <div class="mt-4">
+                                <img src="{{ asset('storage/' . $userScanProgress->scan->cover_image) }}" 
+                                    alt="Current cover" 
+                                    class="max-w-full h-96 object-contain rounded">
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </form>

@@ -20,6 +20,14 @@
                     @if($scan->scan->summary)
                         <p class="text-gray-400 text-sm mb-4 line-clamp-3">{{ $scan->scan->summary }}</p>
                     @endif
+                    
+                    {{-- Add genders and status display --}}
+                    <div class="flex items-center justify-between gap-2 mb-4">
+                        {{-- Gender Pills --}}
+                        <x-m2m.pills :elts="$scan->scan->genders" :title="'Genders'" />
+                        <x-m2o.pill :elt="$scan->scan->status" :size="'sm'" />
+                    </div>
+                    
                     <div class="flex items-center justify-between text-sm text-gray-400">
                         <span>Chapter {{ $scan->current_chapter }}</span>
                         <span>{{ $scan->updated_at->format('M d, Y') }}</span>

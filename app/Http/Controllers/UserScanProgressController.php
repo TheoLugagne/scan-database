@@ -6,7 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\UserScanProgress;    
 use App\Models\Scan;
+use App\Models\ReadingStatus;
+use App\Models\ScanStatus;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class UserScanProgressController extends Controller
 {
@@ -22,6 +25,7 @@ class UserScanProgressController extends Controller
         
         // Get only the authenticated user's scan progress
         $userScanProgress = UserScanProgress::where('user_id', Auth::id())
+            ->with(['scan.genders'])
             ->latest('updated_at')
             ->paginate($perPage);
             
@@ -40,6 +44,7 @@ class UserScanProgressController extends Controller
         // Use the UserScanProgress model directly with a query builder
         $query = UserScanProgress::query()
             ->where('user_id', Auth::id())
+            ->with(['scan.genders'])
             ->join('scans', 'user_scan_progress.scan_id', '=', 'scans.id');
 
         if ($search) {
@@ -60,7 +65,9 @@ class UserScanProgressController extends Controller
     {
         $this->authorize('create', UserScanProgress::class);
         $user = Auth::user();
-        return view('userScanProgress.create', compact('scan', 'user'));
+        $reading_status_list = ReadingStatus::all();
+        $scan_status_list = ScanStatus::all();
+        return view('userScanProgress.create', compact('scan', 'user', 'reading_status_list', 'scan_status_list'));
     }
 
     public function store(Request $request)
@@ -69,6 +76,7 @@ class UserScanProgressController extends Controller
             'user_id' => 'required|exists:users,id',
             'scan_id' => 'required|exists:scans,id',
             'current_chapter' => 'required|numeric|min:0',
+            'reading_status' => ['required', Rule::enum(ReadingStatus::class)],
         ]);
         
         $userScanProgress = UserScanProgress::create($validated);
@@ -78,6 +86,7 @@ class UserScanProgressController extends Controller
     public function show(UserScanProgress $userScanProgress)
     {
         $this->authorize('view', $userScanProgress);
+        $userScanProgress->load(['scan.genders']);
         return view('userScanProgress.show', compact('userScanProgress'));
     }
 
@@ -85,7 +94,8 @@ class UserScanProgressController extends Controller
     {
         $this->authorize('update', $userScanProgress);
         $user = Auth::user();
-        return view('userScanProgress.edit', compact('userScanProgress', 'user'));
+        $reading_status_list = ReadingStatus::all();
+        return view('userScanProgress.edit', compact('userScanProgress', 'user', 'reading_status_list'));
     }
 
     public function update(Request $request, UserScanProgress $userScanProgress)
@@ -93,6 +103,7 @@ class UserScanProgressController extends Controller
         $this->authorize('update', $userScanProgress);
         $validated = $request->validate([
             'current_chapter' => 'required|numeric|min:0',
+            'reading_status' => ['required', Rule::enum(ReadingStatus::class)],
         ]);
 
         // Check if any values are actually different

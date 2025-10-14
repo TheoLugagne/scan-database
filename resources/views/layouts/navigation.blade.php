@@ -21,6 +21,12 @@
                             class="text-gray-300 hover:text-white">
                             {{ __('My Scans') }}
                         </x-nav-link>
+                        @if (Auth::user()->role === 'admin')
+                            <x-nav-link :href="route('gender.index')"
+                                class="text-gray-300 hover:text-white">
+                                {{ __('Genders') }}
+                            </x-nav-link>
+                        @endif
                     </div>
                 @endauth
             </div>
