@@ -18,11 +18,14 @@
                         {{ $scan->title }}
                     </a>
                     @if($scan->summary)
-                        <p class="text-gray-400 text-sm mb-4 line-clamp-3">{{ $scan->summary }}</p>
+                        <p class="text-gray-400  text-sm mb-4 line-clamp-3">{{ $scan->summary }}</p>
                     @endif
                     
-                    {{-- Gender Pills --}}
-                    <x-m2m.pills :elts="$scan->genders" :title="'Genders'" />
+                    <div class="flex items-center justify-between gap-2">
+                        {{-- Gender Pills --}}
+                        <x-m2m.pills :elts="$scan->genders" :title="'Genders'" />
+                        <x-m2o.pill :elt="$scan->status" :size="'sm'" />
+                    </div>
 
                     @if($scan->link_to_scan)
                         <div class="flex items-center justify-between text-sm text-gray-400">

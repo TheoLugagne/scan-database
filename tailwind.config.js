@@ -9,6 +9,19 @@ export default {
         './resources/views/**/*.blade.php',
     ],
 
+    safelist: [
+        // ScanStatus colors
+        'border-emerald-800',
+        'text-emerald-800',
+        'border-green-800',
+        'text-green-800',
+        'border-orange-800',
+        'text-orange-800',
+        'border-red-800',
+        'text-red-800',
+        'line-clamp-3',
+    ],
+
     theme: {
         extend: {
             fontFamily: {

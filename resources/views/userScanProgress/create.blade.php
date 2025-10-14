@@ -56,6 +56,12 @@
                         @enderror
                     </div>
 
+                    <!-- Reading Status -->
+                    <div class="border-b border-gray-700 pb-4">
+                        <h3 class="text-gray-400 text-sm mb-2">Reading Status</h3>
+                        <x-m2o.selector :elts="$reading_status_list" :selected_elt="$reading_status_list[0]" :title="'Reading Status'" :field_name="'reading_status'" />
+                    </div>
+
                     <!-- Link to Scan -->
                     <div class="border-b border-gray-700 pb-4">
                         <h3 class="text-gray-400 text-sm">Link to Scan</h3>
@@ -89,18 +95,21 @@
                     </div>
                 </div>
 
-                <div class="bg-gray-900 rounded-lg p-6">
-                    <h3 class="text-white text-xl mb-4">Cover Image</h3>
-                    @if($scan->cover_image)
-                        <div class="mt-4">
-                            <img src="{{ asset('storage/' . $scan->cover_image) }}" 
+                <div class="flex flex-col h-full">
+                    <x-m2o.statusbar :elts="$scan_status_list" :selected="$scan->status" :readonly="true" />
+                    <div class="bg-gray-900 rounded-lg p-6 flex-1">
+                        <h3 class="text-white text-xl mb-4">Cover Image</h3>
+                        @if($scan->cover_image)
+                            <div class="mt-4">
+                                <img src="{{ asset('storage/' . $scan->cover_image) }}" 
                                 alt="Current cover" 
                                 class="max-w-full h-96 object-contain rounded">
-                        </div>
-                    @else
-                        <p class="text-gray-400">No cover image available</p>
-                    @endif
-                </>
+                            </div>
+                        @else
+                            <p class="text-gray-400">No cover image available</p>
+                        @endif
+                    </div>
+                </div>
             </div>
         </form>
     </div>

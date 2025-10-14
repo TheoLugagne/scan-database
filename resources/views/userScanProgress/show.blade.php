@@ -1,8 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-white">
-            {{ $userScanProgress->scan->title }}
-        </h2>
+        <div class="flex items-center justify-between gap-2">
+            <h2 class="font-semibold text-xl text-white">
+                {{ $userScanProgress->scan->title }}
+            </h2>
+            <x-m2o.pill :elt="$userScanProgress->scan->status" />
+        </div>
     </x-slot>
 
     <div class="bg-gray-800 rounded-lg shadow-lg p-6">
@@ -47,7 +50,17 @@
 
                 <div class="border-b border-gray-700 pb-4">
                     <h3 class="text-gray-400 text-sm">Summary</h3>
-                    <p class="text-white">{{ $userScanProgress->scan->summary ?? 'No summary available' }}</p>
+                    @if($userScanProgress->scan->summary)
+                        <p class="text-white">{{ $userScanProgress->scan->summary }}</p>
+                    @else
+                        <p class="text-gray-500">No summary available</p>
+                    @endif
+                </div>
+
+                {{-- Add genders and status display --}}
+                <div class="border-b border-gray-700 pb-4">
+                    <h3 class="text-gray-400 text-sm mb-2">Genders</h3>
+                    <x-m2m.pills :elts="$userScanProgress->scan->genders" :title="'Genders'"/>
                 </div>
 
                 <div class="pt-4 flex space-x-4">

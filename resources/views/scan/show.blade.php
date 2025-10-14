@@ -1,8 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-white text-center">
-            {{ $scan->title }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-white">
+                {{ $scan->title }}
+            </h2>
+            <x-m2o.pill :elt="$scan->status" />
+        </div>
     </x-slot>
 
     <div class="container mx-auto px-4">
@@ -22,7 +25,11 @@
                             
                     <div class="border-b border-gray-700 pb-4 mb-6 text-center">
                         <h3 class="text-gray-400 text-sm mb-2">Summary</h3>
-                        <p class="text-white">{{ $scan->summary ?? 'No summary available' }}</p>
+                        @if($scan->summary)
+                            <p class="text-white">{{ $scan->summary }}</p>
+                        @else
+                            <p class="text-gray-500">No summary available</p>
+                        @endif
                     </div>
 
                     {{-- Gender Pills --}}
@@ -30,7 +37,7 @@
                         <h3 class="text-gray-400 text-sm mb-2">Genders</h3>
                         <x-m2m.pills :elts="$scan->genders" :title="'Genders'"/>
                     </div>
-
+                    
                     <div class="border-b border-gray-700 pb-4 mb-6 text-center">
                         <h3 class="text-gray-400 text-sm mb-2">Link to Scan</h3>
                         @if($scan->link_to_scan)
