@@ -3,7 +3,7 @@
 <div id="m2m_pills_selector">
     <label class="block text-base font-medium text-gray-300">{{ $title }}</label>
     <input type="hidden" id="field_name" value="{{ $field_name }}">
-    <div class="relative mt-2 border border-gray-700 rounded-md">
+    <div class="relative mt-2">
         <div id="selected_elts" class="block w-full rounded-md bg-gray-800 border-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base p-2 cursor-pointer @error('elts') border-red-500 @enderror">
             Select {{ $title }}...
         </div>
