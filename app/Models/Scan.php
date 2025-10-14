@@ -20,6 +20,11 @@ class Scan extends Model
         'summary',
         'cover_image',
         'link_to_scan',
+        'status',
+    ];
+
+    protected $casts = [
+        'status' => ScanStatus::class,
     ];
 
     public function userScanProgress()

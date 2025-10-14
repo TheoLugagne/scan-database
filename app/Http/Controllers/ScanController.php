@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\UserScanProgress;
 use App\Models\Gender;
+use App\Models\ScanStatus;
 use Illuminate\Support\Facades\Log;
 
 class ScanController extends Controller
@@ -59,7 +60,8 @@ class ScanController extends Controller
     public function create()
     {
         $genders = Gender::all();
-        return view('scan.create', ['genders' => $genders]);
+        $status_list = ScanStatus::all();
+        return view('scan.create', ['genders' => $genders, 'status' => $status_list]);
     }
 
     /**
@@ -74,6 +76,7 @@ class ScanController extends Controller
                 'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 'link_to_scan' => 'nullable|url',
                 'gender_ids' => 'nullable|string|regex:/^\d+(,\d+)*$/',
+                'status' => ['required', Rule::enum(ScanStatus::class)],
             ]);
 
             $validated['user_id'] = auth()->id();
@@ -140,8 +143,8 @@ class ScanController extends Controller
             session(['scan_previous_url' => $previousUrl]);
         }
         $genders = Gender::all();
-        
-        return view('scan.edit', compact('scan', 'genders'));
+        $status_list = ScanStatus::all();
+        return view('scan.edit', compact('scan', 'genders', 'status_list'));
     }
 
     /**
@@ -157,6 +160,7 @@ class ScanController extends Controller
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'link_to_scan' => 'nullable|url',
             'gender_ids' => 'nullable|string|regex:/^\d+(,\d+)*$/',
+            'status' => ['required', Rule::enum(ScanStatus::class)],
         ]);
 
         if ($request->hasFile('cover_image')) {
