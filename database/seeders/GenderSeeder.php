@@ -11,7 +11,7 @@ class GenderSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public static function run(): void
     {
         Gender::create([
             'name' => 'Action',
