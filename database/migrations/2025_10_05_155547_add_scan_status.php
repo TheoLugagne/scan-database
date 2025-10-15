@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('scans', function (Blueprint $table) {
-            $table->string('status')->default(ScanStatus::ONGOING->label());
+            $table->string('status')->default(ScanStatus::ONGOING);
         });
     }
 
