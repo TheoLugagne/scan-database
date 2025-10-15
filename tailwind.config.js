@@ -19,7 +19,8 @@ export default {
         'text-orange-800',
         'border-red-800',
         'text-red-800',
-        'line-clamp-3',
+        'border-yellow-800',
+        'text-yellow-800',
     ],
 
     theme: {

@@ -87,7 +87,8 @@ class UserScanProgressController extends Controller
     {
         $this->authorize('view', $userScanProgress);
         $userScanProgress->load(['scan.genders']);
-        return view('userScanProgress.show', compact('userScanProgress'));
+        $reading_status_list = ReadingStatus::all();
+        return view('userScanProgress.show', compact('userScanProgress', 'reading_status_list'));
     }
 
     public function edit(UserScanProgress $userScanProgress)
