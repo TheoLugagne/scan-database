@@ -54,7 +54,7 @@ class UserScanProgressController extends Controller
             });
         }
 
-        $userScanProgress = $query->latest('scans.updated_at')
+        $userScanProgress = $query->latest('user_scan_progress.updated_at')
             ->select('user_scan_progress.*')
             ->paginate($perPage);
 
