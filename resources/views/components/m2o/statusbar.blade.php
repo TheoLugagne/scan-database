@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusElts = document.querySelectorAll('.status_elt');
     statusElts.forEach(elt => {
         elt.addEventListener('click', function() {
-            if ({{ $readonly }}) {
+            if ({{ $readonly ? 'true' : 'false' }}) {
                 return;
             }
             console.log(document.getElementById('status').value);
