@@ -93,6 +93,13 @@ class UserScanProgressController extends Controller
     public function edit(UserScanProgress $userScanProgress)
     {
         $this->authorize('update', $userScanProgress);
+        
+        // Only store previous URL if it's not from the edit page
+        $previousUrl = url()->previous();
+        if (!str_contains($previousUrl, '/userScanProgress/' . $userScanProgress->id . '/edit')) {
+            session(['userScanProgress_previous_url' => $previousUrl]);
+        }
+        
         $user = Auth::user();
         $reading_status_list = ReadingStatus::all();
         return view('userScanProgress.edit', compact('userScanProgress', 'user', 'reading_status_list'));
