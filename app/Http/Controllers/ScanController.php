@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\UserScanProgress;
 use App\Models\Gender;
 use App\Models\ScanStatus;
+use App\Models\ReadingStatus;
 use Illuminate\Support\Facades\Log;
 
 class ScanController extends Controller
@@ -102,7 +103,8 @@ class ScanController extends Controller
                 $request = new Request([
                     'user_id' => auth()->id(),
                     'scan_id' => $scan->id,
-                    'current_chapter' => $request->input('current_chapter', 0)
+                    'current_chapter' => $request->input('current_chapter', 0),
+                    'reading_status' => $request->input('reading_status', ReadingStatus::NOT_STARTED)
                 ]);
                 $userScanProgress->store($request);
             }
