@@ -14,7 +14,7 @@
         </div>
         <div id="elts-dropdown" class="hidden absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
             @foreach($elts as $elt)
-                <div class="elt-option px-4 py-2 text-white hover:bg-gray-700 cursor-pointer flex items-center" data-value="{{ $elt->id }}" data-name="{{ $elt->name }}">
+                <div class="elts-option px-4 py-2 text-white hover:bg-gray-700 cursor-pointer flex items-center" data-value="{{ $elt->id }}" data-name="{{ $elt->name }}">
                     @if ($selected_elts)
                         @if($selected_elts->contains($elt))
                             <input type="checkbox" class="elt-checkbox mr-3 rounded border-gray-600 bg-gray-700 text-indigo-600 focus:ring-indigo-500" value="{{ $elt->id }}" checked>
@@ -43,11 +43,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Genders dropdown functionality
     const elts_display = document.getElementById('selected_elts');
     const eltsDropdown = document.getElementById('elts-dropdown');
-    const eltOptions = document.querySelectorAll('.elt-option');
+    const eltOptions = document.querySelectorAll('.elts-option');
     const eltCheckboxes = document.querySelectorAll('.elt-checkbox');
     let selectedElts = Array.from(eltCheckboxes).filter(checkbox => checkbox.checked).map(checkbox => {
         if (checkbox.checked) {
-            return { value: checkbox.value, name: checkbox.closest('.elt-option').dataset.name };
+            return { value: checkbox.value, name: checkbox.closest('.elts-option').dataset.name };
         }
     })
     updateInputDisplay();
