@@ -36,7 +36,7 @@ enum ReadingStatus: string
     public function color(): string
     {
         return match($this) {
-            self::NOT_STARTED => 'gray-800',
+            self::NOT_STARTED => 'white',
             self::ONGOING => 'emerald-800',
             self::COMPLETED => 'green-800',
             self::ON_HOLD => 'yellow-800',

@@ -79,15 +79,19 @@
                 </div>
             </div>
 
-            <div class="bg-gray-900 rounded-lg p-6">
-                @if($userScanProgress->scan->cover_image)
-                    <h3 class="text-white text-xl mb-4">Cover Image</h3>
-                    <img src="{{ asset('storage/' . $userScanProgress->scan->cover_image) }}" 
-                        alt="Cover Image" 
-                        class="max-w-full h-48 object-contain rounded">
-                @else
-                    <p class="text-gray-400">No cover image available</p>
-                @endif
+
+            <div class="flex flex-col h-full">
+                <x-m2o.statusbar :elts="$reading_status_list" :selected="$userScanProgress->reading_status" :readonly="true" />
+                <div class="bg-gray-900 rounded-lg p-6 flex-1">
+                    @if($userScanProgress->scan->cover_image)
+                        <h3 class="text-white text-xl mb-4">Cover Image</h3>
+                        <img src="{{ asset('storage/' . $userScanProgress->scan->cover_image) }}" 
+                            alt="Cover Image" 
+                            class="max-w-full h-48 object-contain rounded">
+                    @else
+                        <p class="text-gray-400">No cover image available</p>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
