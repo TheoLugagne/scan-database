@@ -1,6 +1,6 @@
 @props(['elts' => null, 'selected' => null, 'field_name' => 'status', 'readonly' => false])
 
-<div id="m2o_statusbar">
+<div id="m2o_statusbar_{{ $field_name }}">
     <div class="flex flex-wrap border border-indigo-600 rounded-md mb-5">
         @foreach($elts as $elt)
             @php
@@ -19,18 +19,18 @@
             @endif
         @endforeach
     </div>
-    <input type="hidden" id="status" name="{{ $field_name }}" value="{{ $selected->value }}" />
+    <input type="hidden" id="status_{{ $field_name }}" name="{{ $field_name }}" value="{{ $selected?->value }}" />
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const statusElts = document.querySelectorAll('.status_elt');
+    const container = document.getElementById('m2o_statusbar_{{ $field_name }}');
+    const statusElts = container.querySelectorAll('.status_elt');
     statusElts.forEach(elt => {
         elt.addEventListener('click', function() {
             if ({{ $readonly ? 'true' : 'false' }}) {
                 return;
             }
-            console.log(document.getElementById('status').value);
             updateDisplay(this);
             updateHiddenInput(this);
         });
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateHiddenInput(target) {
-        document.getElementById('status').value = target.dataset.value;
+        document.getElementById('status_{{ $field_name }}').value = target.dataset.value;
     }
 });
 </script>
