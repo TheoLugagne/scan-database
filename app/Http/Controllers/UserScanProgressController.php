@@ -40,6 +40,9 @@ class UserScanProgressController extends Controller
         $perPage = max(1, $perPage);
 
         $search = $request->input('search', '');
+        $readingStatus = $request->input('reading_status', '');
+        $status = $request->input('status', '');
+        $genderIds = $request->input('gender_ids', '');
 
         // Use the UserScanProgress model directly with a query builder
         $query = UserScanProgress::query()
@@ -51,6 +54,23 @@ class UserScanProgressController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('scans.title', 'like', '%' . $search . '%')
                   ->orWhere('scans.link_to_scan', 'like', '%' . $search . '%');
+            });
+        }
+        
+        // add reading status filter
+        if ($readingStatus) {
+            $query->where('user_scan_progress.reading_status', $readingStatus);
+        }
+
+        // add scan status filter
+        if ($status) {
+            $query->where('scans.status', $status);
+        }
+
+        // add genders filter
+        if ($genderIds) {
+            $query->whereHas('scan.genders', function($q) use ($genderIds) {
+                $q->whereIn('genders.id', $genderIds);
             });
         }
 
