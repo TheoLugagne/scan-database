@@ -9,7 +9,7 @@
             </div>
             
             {{-- Centered Search Bar (wider on small screens) --}}
-            <div class="flex-1 flex justify-center">
+            <!-- <div class="flex-1 flex justify-center">
                 <div class="relative w-full max-w-md sm:max-w-xl">
                     <input type="text" 
                            id="search" 
@@ -26,8 +26,9 @@
                         </svg>
                     </button>
                 </div>
-            </div>
-
+            </div> -->
+            <x-search.searchbar />
+            
             {{-- Right side with responsive width --}}
             <div class="w-24 sm:w-48 flex justify-end">
                 <div class="flex items-center space-x-2 whitespace-nowrap">
@@ -66,11 +67,8 @@
 
     @push('scripts')
     <script>
-        let searchTimeout;
+        // Get references to DOM elements (may already be initialized by searchbar component)
         const searchInput = document.getElementById('search');
-        const searchButton = document.getElementById('search-button');
-        const searchIcon = document.getElementById('search-icon');
-        const clearIcon = document.getElementById('clear-icon');
         const perPageInput = document.getElementById('per_page');
         const scansContainer = document.getElementById('scans-container');
 
@@ -96,19 +94,19 @@
         // Function to fetch scans with current parameters
         function fetchScans() {
             const params = new URLSearchParams(window.location.search);
-            const search = searchInput.value;
+            //const search = searchInput.value;
             const perPage = perPageInput.value;
             const currentPage = getCurrentPage();
             
-            if (search) params.set('search', search);
-            else params.delete('search');
+            //if (search) params.set('search', search);
+            //else params.delete('search');
             
             params.set('per_page', perPage);
             params.set('page', currentPage);
             
             // Update URL without triggering a page reload
             updateUrlParams({
-                search: search || null,
+                search: params.get('search') || null,
                 per_page: perPage || 12,
                 page: currentPage || 1
             });
@@ -132,37 +130,6 @@
             fetchScans();
         }
 
-        // Handle search input with debounce
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                // Reset to first page when searching
-                updateUrlParams({ page: 1 });
-                fetchScans();
-            }, 500);
-
-            // Toggle clear button visibility
-            if (this.value) {
-                searchIcon.classList.add('hidden');
-                clearIcon.classList.remove('hidden');
-            } else {
-                searchIcon.classList.remove('hidden');
-                clearIcon.classList.add('hidden');
-            }
-        });
-
-        // Handle clear search button
-        searchButton.addEventListener('click', function() {
-            if (searchInput.value) {
-                searchInput.value = '';
-                searchIcon.classList.remove('hidden');
-                clearIcon.classList.add('hidden');
-                // Reset to first page when clearing search
-                updateUrlParams({ page: 1 });
-                fetchScans();
-            }
-        });
-
         // Handle per page input
         perPageInput.addEventListener('change', function() {
             // Ensure value is at least 1
@@ -182,14 +149,14 @@
                 const page = params.get('page');
                 
                 // Preserve current search and per_page values
-                if (searchInput.value) params.set('search', searchInput.value);
                 params.set('per_page', perPageInput.value);
+                params.set('search', searchInput.value);     
                 
                 // Update URL and fetch
                 updateUrlParams({
                     page: page,
                     search: searchInput.value || null,
-                    per_page: perPageInput.value
+                    per_page: perPageInput.value || 12
                 });
                 
                 fetchScans();
@@ -202,24 +169,31 @@
             searchInput.value = params.get('search') || '';
             perPageInput.value = params.get('per_page') || 12;
             
-            // Update search icon state
-            if (searchInput.value) {
-                searchIcon.classList.add('hidden');
-                clearIcon.classList.remove('hidden');
-            } else {
-                searchIcon.classList.remove('hidden');
-                clearIcon.classList.add('hidden');
-            }
-            
             fetchScans();
         });
 
         // Initialize page from URL on load
         document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
-            const page = params.get('page');
-            if (page) {
-                updateUrlParams({ page: page });
+            const searchParam = params.get('search');
+            const pageParam = params.get('page');
+            const perPageParam = params.get('per_page');
+            
+            // Sync input values with URL parameters
+            if (searchInput && searchParam !== null) {
+                searchInput.value = searchParam;
+            }
+            if (perPageInput && perPageParam) {
+                perPageInput.value = perPageParam;
+            }
+            
+            // If there are URL parameters, fetch scans to ensure content and pagination match URL state
+            // This is especially important when navigating back with search parameters
+            if (searchParam || pageParam || perPageParam) {
+                // Small delay to ensure all components (including searchbar) are initialized
+                setTimeout(function() {
+                    fetchScans();
+                }, 100);
             }
         });
     </script>
