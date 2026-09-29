@@ -21,10 +21,14 @@ class Scan extends Model
         'cover_image',
         'link_to_scan',
         'status',
+        'available_chapters',
+        'available_chapters_updated_at',
     ];
 
     protected $casts = [
         'status' => ScanStatus::class,
+        'available_chapters' => 'integer',
+        'available_chapters_updated_at' => 'datetime',
     ];
 
     public function userScanProgress()

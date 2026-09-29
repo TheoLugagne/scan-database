@@ -32,6 +32,11 @@
                         @endif
                     </div>
 
+                    <div class="border-b border-gray-700 pb-4 mb-6 flex flex-col items-center">
+                        <h3 class="text-gray-400 text-sm mb-2">Available chapters</h3>
+                        <x-scan.available-chapters :scan="$scan" class="justify-center" />
+                    </div>
+
                     {{-- Genre Pills --}}
                     <div class="border-b border-gray-700 pb-4 mb-6 text-center flex flex-col items-center">
                         <h3 class="text-gray-400 text-sm mb-2">Genres</h3>
