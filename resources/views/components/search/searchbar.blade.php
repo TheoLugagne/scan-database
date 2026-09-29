@@ -1,6 +1,6 @@
-{{-- Centered Search Bar (wider on small screens) --}}
-<div class="flex-1 flex flex-col items-center">
-    <div id="searchbar" class="relative w-full max-w-md sm:max-w-xl">
+{{-- Centered search. The filter panel is anchored here so it hangs below the toolbar. --}}
+<div class="flex-1 flex justify-center min-w-0">
+    <div id="searchbar" class="relative w-full max-w-xl">
         <input type="text" 
                 id="search" 
                 value="{{ request('search', '') }}"
@@ -24,35 +24,38 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
         </button>
-    </div>
-    <div class="filter-panel-container hidden relative w-full">
-        <x-search.filterpanel />
+        <div class="filter-panel-container hidden overflow-visible">
+            <x-search.filterpanel />
+        </div>
     </div>
 </div>
 
-{{-- Immediate initialization script to set icons based on initial value --}}
 <script>
-    (function() {
-        const searchInput = document.getElementById('search');
-        const searchIcon = document.getElementById('search-icon');
-        const clearIcon = document.getElementById('clear-icon');
-        
-        if (searchInput && searchIcon && clearIcon) {
-            // Set initial icon state based on input value
-            if (searchInput.value) {
-                searchIcon.classList.add('hidden');
-                clearIcon.classList.remove('hidden');
-            } else {
-                searchIcon.classList.remove('hidden');
-                clearIcon.classList.add('hidden');
-            }
-        }
-    })();
-</script>
-
-<script>
+    searchInput = document.getElementById('search');
+    const searchIcon = document.getElementById('search-icon');
+    const clearIcon = document.getElementById('clear-icon');
     (function() {
         let searchTimeout;
+        let filterTimeout;
+        let isFiltered = false;
+        
+        // Register callback for filter changes from filterpanel
+        window.onFilterChange = function(filterValues) {
+            clearTimeout(filterTimeout);
+            filterTimeout = setTimeout(() => {
+                isFiltered = Object.values(filterValues).some(v => v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0));
+                if (isFiltered || searchInput.value) {
+                    searchIcon.classList.add('hidden');
+                    clearIcon.classList.remove('hidden');
+                } 
+                if (!isFiltered && !searchInput.value) {
+                    searchIcon.classList.remove('hidden');
+                    clearIcon.classList.add('hidden');
+                }
+                updateUrlParams({ page: 1 });
+                fetchScans();
+            }, 300);
+        };
         
         function updateSearchbarIcons(searchInput, searchIcon, clearIcon) {
             if (searchInput.value) {
@@ -65,9 +68,6 @@
         }
 
         function syncSearchbarFromUrl() {
-            const searchInput = document.getElementById('search');
-            const searchIcon = document.getElementById('search-icon');
-            const clearIcon = document.getElementById('clear-icon');
 
             if (!searchInput || !searchIcon || !clearIcon) {
                 return; // Elements not found, exit early
@@ -76,14 +76,20 @@
             const params = new URLSearchParams(window.location.search);
             const searchValue = params.get('search') || '';
             searchInput.value = searchValue;
-            updateSearchbarIcons(searchInput, searchIcon, clearIcon);
+            const hasFilters = ['status', 'reading_status', 'gender_ids'].some(function(key) {
+                return params.get(key) || params.getAll(key + '[]').some(Boolean);
+            });
+            isFiltered = hasFilters;
+            if (searchValue || hasFilters) {
+                searchIcon.classList.add('hidden');
+                clearIcon.classList.remove('hidden');
+            } else {
+                searchIcon.classList.remove('hidden');
+                clearIcon.classList.add('hidden');
+            }
         }
 
         function initSearchbar() {
-            const searchInput = document.getElementById('search');
-            const searchIcon = document.getElementById('search-icon');
-            const clearIcon = document.getElementById('clear-icon');
-
             if (!searchInput || !searchIcon || !clearIcon) {
                 return; // Elements not found, exit early
             }
@@ -100,25 +106,34 @@
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     // Use the updateUrlParams function from the parent page if available
-                    if (typeof updateUrlParams === 'function') {
-                        updateUrlParams({ page: 1, search: this.value });
-                    }
-                    // Call fetchScans if available
-                    if (typeof fetchScans === 'function') {
-                        fetchScans();
-                    }
+                    updateUrlParams({ page: 1, search: this.value });
+                    fetchScans();
                 }, 500);
             });
 
             clearIcon.addEventListener('click', function() {
+                // Clear search input
                 searchInput.value = '';
-                updateSearchbarIcons(searchInput, searchIcon, clearIcon);
-                // Use the updateUrlParams function from the parent page if available
-                if (typeof updateUrlParams === 'function') {
-                    updateUrlParams({ page: 1, search: '' });
+                isFiltered = false;
+                
+                // Clear all filters
+                if (typeof window.clearAllFilters === 'function') {
+                    window.clearAllFilters();
                 }
-                // Call fetchScans if available
-                if (typeof fetchScans === 'function') {
+                
+                updateSearchbarIcons(searchInput, searchIcon, clearIcon);
+                
+                // Clear all URL params and reset to base path
+                window.history.pushState({}, '', window.location.pathname);
+                
+                // Update URL params to remove everything
+                updateUrlParams({ page: 1, search: '' });
+                
+                // Trigger filter change to update the display
+                if (typeof window.triggerFilterChange === 'function') {
+                    window.triggerFilterChange();
+                } else {
+                    // Fallback: directly call fetchScans if triggerFilterChange is not available
                     fetchScans();
                 }
             });

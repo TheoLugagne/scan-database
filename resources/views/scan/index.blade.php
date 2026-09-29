@@ -68,7 +68,7 @@
     @push('scripts')
     <script>
         // Get references to DOM elements (may already be initialized by searchbar component)
-        const searchInput = document.getElementById('search');
+        searchInput = document.getElementById('search');
         const perPageInput = document.getElementById('per_page');
         const scansContainer = document.getElementById('scans-container');
 
@@ -92,24 +92,64 @@
         }
 
         // Function to fetch scans with current parameters
-        function fetchScans() {
+        function fetchScans(updateHistory = true) {
             const params = new URLSearchParams(window.location.search);
-            //const search = searchInput.value;
             const perPage = perPageInput.value;
             const currentPage = getCurrentPage();
             
-            //if (search) params.set('search', search);
-            //else params.delete('search');
+            // Get all filter values
+            let filterValues = {};
+            if (typeof window.collectAllFilterValues === 'function') {
+                filterValues = window.collectAllFilterValues();
+            }
+            
+            // Remove existing filter params first to avoid duplicates
+            Object.keys(filterValues).forEach(key => {
+                params.delete(key);
+                params.delete(key + '[]');
+            });
+            
+            // Add filter values to params
+            Object.entries(filterValues).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== '') {
+                    if (Array.isArray(value)) {
+                        // For arrays, add each value as a separate param (Laravel style)
+                        value.forEach(v => {
+                            params.append(key + '[]', v);
+                        });
+                    } else {
+                        params.set(key, value);
+                    }
+                }
+            });
             
             params.set('per_page', perPage);
             params.set('page', currentPage);
             
             // Update URL without triggering a page reload
-            updateUrlParams({
+            const urlParams = {
                 search: params.get('search') || null,
                 per_page: perPage || 12,
                 page: currentPage || 1
+            };
+            
+            // Add filter values to URL params (include null values to remove them from URL)
+            Object.entries(filterValues).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== '') {
+                    if (Array.isArray(value)) {
+                        urlParams[key] = value.join(',');
+                    } else {
+                        urlParams[key] = value;
+                    }
+                } else {
+                    // Explicitly set to null so updateUrlParams will remove it from URL
+                    urlParams[key] = null;
+                }
             });
+            
+            if (updateHistory) {
+                updateUrlParams(urlParams);
+            }
 
             // Fetch new content
             fetch(`{{ route('scans.fetch') }}?${params.toString()}`)
@@ -163,37 +203,39 @@
             }
         });
 
-        // Handle browser back/forward buttons
+        function listParamsPresent(params) {
+            return ['search', 'page', 'per_page', 'status', 'reading_status', 'gender_ids'].some(key => params.get(key))
+                || params.getAll('gender_ids[]').some(Boolean);
+        }
+
+        function syncListStateFromUrl(params) {
+            if (searchInput) {
+                searchInput.value = params.get('search') || '';
+            }
+            if (perPageInput) {
+                perPageInput.value = params.get('per_page') || 12;
+            }
+            if (typeof window.applyFiltersFromUrl === 'function') {
+                window.applyFiltersFromUrl(params);
+            }
+        }
+
+        // Handle browser back/forward buttons. The URL is already correct, so do not
+        // write the previous selector values back over it.
         window.addEventListener('popstate', function() {
             const params = new URLSearchParams(window.location.search);
-            searchInput.value = params.get('search') || '';
-            perPageInput.value = params.get('per_page') || 12;
-            
-            fetchScans();
+            syncListStateFromUrl(params);
+            fetchScans(false);
         });
 
         // Initialize page from URL on load
         document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
-            const searchParam = params.get('search');
-            const pageParam = params.get('page');
-            const perPageParam = params.get('per_page');
-            
-            // Sync input values with URL parameters
-            if (searchInput && searchParam !== null) {
-                searchInput.value = searchParam;
-            }
-            if (perPageInput && perPageParam) {
-                perPageInput.value = perPageParam;
-            }
-            
-            // If there are URL parameters, fetch scans to ensure content and pagination match URL state
-            // This is especially important when navigating back with search parameters
-            if (searchParam || pageParam || perPageParam) {
-                // Small delay to ensure all components (including searchbar) are initialized
-                setTimeout(function() {
-                    fetchScans();
-                }, 100);
+
+            syncListStateFromUrl(params);
+
+            if (listParamsPresent(params)) {
+                fetchScans(false);
             }
         });
     </script>
