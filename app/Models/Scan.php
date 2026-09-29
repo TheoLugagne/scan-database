@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -61,6 +62,32 @@ class Scan extends Model
             && ($this->relationLoaded('genres')
                 ? $this->genres->isNotEmpty()
                 : $this->genres()->exists()));
+    }
+
+    /**
+     * Scans for which isInformationComplete is false: a blank required field, a null chapter count, or no genres.
+     */
+    public function scopeIncomplete(Builder $query): Builder
+    {
+        return $query->where(function (Builder $query) {
+            foreach (['title', 'summary', 'cover_image', 'link_to_scan', 'status'] as $column) {
+                $query->orWhere(fn (Builder $query) => $this->whereBlankColumn($query, $column));
+            }
+
+            $query->orWhereNull('available_chapters')
+                ->orWhereDoesntHave('genres');
+        });
+    }
+
+    /**
+     * Null or whitespace-only values, matching filled().
+     */
+    private function whereBlankColumn(Builder $query, string $column): void
+    {
+        $wrapped = $query->getQuery()->getGrammar()->wrap($query->qualifyColumn($column));
+
+        $query->whereNull($column)
+            ->orWhereRaw("trim({$wrapped}) = ''");
     }
 
     public static function getFilterSectionsData() {

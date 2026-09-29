@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GenreController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\UserScanProgressController;
-use App\Http\Controllers\GenreController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -12,9 +13,7 @@ Route::get('/', function () {
 Route::resource('scan', ScanController::class);
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/userScanProgress/fetch', [UserScanProgressController::class, 'fetch'])->name('userScanProgress.fetch');
     Route::resource('userScanProgress', UserScanProgressController::class);
     Route::get('/userScanProgress/create/{scan}', [UserScanProgressController::class, 'create'])->name('userScanProgress.create');
