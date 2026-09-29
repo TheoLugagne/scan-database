@@ -92,6 +92,31 @@ class ScanController extends Controller
     }
 
     /**
+     * Stamp the chapter-count date only when the amount itself changes.
+     * Clearing the amount clears the date. Other edits leave the date alone.
+     */
+    private function applyAvailableChaptersTimestamp(array $validated, ?Scan $scan = null): array
+    {
+        if (!array_key_exists('available_chapters', $validated)) {
+            return $validated;
+        }
+
+        $newCount = $validated['available_chapters'] === null
+            ? null
+            : (int) $validated['available_chapters'];
+        $validated['available_chapters'] = $newCount;
+
+        $currentCount = $scan?->available_chapters;
+        $currentCount = $currentCount === null ? null : (int) $currentCount;
+
+        if ($scan === null || $currentCount !== $newCount) {
+            $validated['available_chapters_updated_at'] = $newCount === null ? null : now();
+        }
+
+        return $validated;
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
@@ -114,8 +139,10 @@ class ScanController extends Controller
                 'link_to_scan' => 'nullable|url',
                 'genre_ids' => 'nullable|string|regex:/^\d+(,\d+)*$/',
                 'status' => ['required', Rule::enum(ScanStatus::class)],
+                'available_chapters' => 'nullable|integer|min:0',
             ]);
 
+            $validated = $this->applyAvailableChaptersTimestamp($validated);
             $validated['user_id'] = auth()->id();
             
             if ($request->hasFile('cover_image')) {
@@ -199,7 +226,10 @@ class ScanController extends Controller
             'link_to_scan' => 'nullable|url',
             'genre_ids' => 'nullable|string|regex:/^\d+(,\d+)*$/',
             'status' => ['required', Rule::enum(ScanStatus::class)],
+            'available_chapters' => 'nullable|integer|min:0',
         ]);
+
+        $validated = $this->applyAvailableChaptersTimestamp($validated, $scan);
 
         if ($request->hasFile('cover_image')) {
             // Delete old image if exists

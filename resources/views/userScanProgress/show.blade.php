@@ -38,6 +38,11 @@
                 </div>
 
                 <div class="border-b border-gray-700 pb-4">
+                    <h3 class="text-gray-400 text-sm mb-2">Available chapters</h3>
+                    <x-scan.available-chapters :scan="$userScanProgress->scan" />
+                </div>
+
+                <div class="border-b border-gray-700 pb-4">
                     <h3 class="text-gray-400 text-sm">Link to Scan</h3>
                     @if($userScanProgress->scan->link_to_scan)
                         <a href="{{ $userScanProgress->scan->link_to_scan }}" class="text-blue-400 hover:text-blue-300" target="_blank">

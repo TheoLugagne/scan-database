@@ -5,9 +5,9 @@
 @else
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @foreach($scans as $scan)
-        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+        <div class="relative bg-gray-800 rounded-lg shadow-lg hover:z-10 hover:shadow-xl transition-shadow duration-300">
                 @if($scan->cover_image)
-                    <div class="relative w-full h-64">
+                    <div class="relative w-full h-64 overflow-hidden rounded-t-lg">
                         <img src="{{ asset('storage/' . $scan->cover_image) }}"
                             alt="{{ $scan->title }}"
                             class="absolute inset-0 w-full h-full object-contain bg-gray-700">
@@ -25,6 +25,10 @@
                         {{-- Genre Pills --}}
                         <x-m2m.pills :elts="$scan->genres" :title="'Genres'" />
                         <x-m2o.pill :elt="$scan->status" :size="'sm'" />
+                    </div>
+
+                    <div class="mt-4">
+                        <x-scan.available-chapters :scan="$scan" />
                     </div>
 
                     @if($scan->link_to_scan)

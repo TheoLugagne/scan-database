@@ -55,6 +55,22 @@
 
             <x-m2m.pills_selector :elts="$genres" :selected_elts="[]" :title="'Genres'" :field_name="'genre_ids'" />
             <x-m2o.selector :elts="$status" :selected_elt="$status[0]" :title="'Status'" :field_name="'status'" />
+
+            <div>
+                <div class="flex items-center gap-2">
+                    <label for="available_chapters" class="block text-base font-medium text-gray-300">Available chapters</label>
+                    @if(old('status', $status[0]->value) !== \App\Models\ScanStatus::COMPLETED->value)
+                        <x-info-bubble />
+                    @endif
+                </div>
+                <input type="number" name="available_chapters" id="available_chapters" min="0" step="1"
+                    value="{{ old('available_chapters') }}"
+                    class="mt-2 block w-40 rounded-md bg-gray-800 border-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base p-2 @error('available_chapters') border-red-500 @enderror">
+                @error('available_chapters')
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                @enderror
+                <p class="mt-1 text-sm text-gray-400">Optional. The update date is set when this number changes.</p>
+            </div>
             
             <div>
                 <label for="link_to_scan" class="block text-base font-medium text-gray-300">Link to Scan</label>

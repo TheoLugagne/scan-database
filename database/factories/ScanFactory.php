@@ -16,6 +16,8 @@ class ScanFactory extends Factory
      */
     public function definition(): array
     {
+        $availableChapters = fake()->optional()->numberBetween(0, 300);
+
         return [
             'create_date' => now(),
             'last_update' => now()->nullable(),
@@ -24,6 +26,8 @@ class ScanFactory extends Factory
             'current_chapter' => fake()->randomFloat(1, 100),
             'cover_image' => fake()->optional()->imageUrl(),
             'link_to_scan' => fake()->optional()->url(),
+            'available_chapters' => $availableChapters,
+            'available_chapters_updated_at' => $availableChapters === null ? null : now(),
         ];
     }
 }

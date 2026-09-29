@@ -5,9 +5,9 @@
 @else
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @foreach($userScanProgress as $scan)
-        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+        <div class="relative bg-gray-800 rounded-lg shadow-lg hover:z-10 hover:shadow-xl transition-shadow duration-300">
                 @if($scan->scan->cover_image)
-                    <div class="relative w-full h-64">
+                    <div class="relative w-full h-64 overflow-hidden rounded-t-lg">
                         <img src="{{ asset('storage/' . $scan->scan->cover_image) }}"
                             alt="{{ $scan->scan->title }}"
                             class="absolute inset-0 w-full h-full object-contain bg-gray-700">
@@ -31,6 +31,9 @@
                     <div class="flex items-center justify-between text-sm text-gray-400">
                         <span>Chapter {{ $scan->current_chapter }}</span>
                         <span>{{ $scan->updated_at->format('M d, Y') }}</span>
+                    </div>
+                    <div class="mt-2">
+                        <x-scan.available-chapters :scan="$scan->scan" />
                     </div>
                     @if($scan->scan->link_to_scan)
                         <div class="mt-4">
