@@ -62,10 +62,10 @@
                         @enderror
                     </div>
 
-                    <!-- Genders -->
+                    <!-- Genres -->
                     <div class="border-b border-gray-700 pb-4">
-                        <h3 class="text-gray-400 text-sm">Genders</h3>
-                        <x-m2m.pills_selector :elts="$genders" :selected_elts="$scan->genders" :title="'Genders'" :field_name="'gender_ids'" />
+                        <h3 class="text-gray-400 text-sm">Genres</h3>
+                        <x-m2m.pills_selector :elts="$genres" :selected_elts="$scan->genres" :title="'Genres'" :field_name="'genre_ids'" />
                     </div>
 
                     <!-- Link to Scan -->

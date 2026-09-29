@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\UserScanProgressController;
-use App\Http\Controllers\GenderController;
+use App\Http\Controllers\GenreController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -24,7 +24,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/scan/{scan}/update-chapter', [ScanController::class, 'updateChapter'])->name('scan.update-chapter');
     Route::get('/scans/fetch', [ScanController::class, 'fetch'])->name('scans.fetch');
-    Route::resource('gender', GenderController::class);
+    Route::resource('genre', GenreController::class);
 });
 
 require __DIR__.'/auth.php';

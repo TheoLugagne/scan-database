@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Gender extends Model
+class Genre extends Model
 {
-    /** @use HasFactory<\Database\Factories\GenderFactory> */
+    /** @use HasFactory<\Database\Factories\GenreFactory> */
     use HasFactory;
 
     protected $fillable = [

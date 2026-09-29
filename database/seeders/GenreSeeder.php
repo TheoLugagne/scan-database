@@ -4,46 +4,46 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Gender;
+use App\Models\Genre;
 
-class GenderSeeder extends Seeder
+class GenreSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public static function run(): void
     {
-        Gender::create([
+        Genre::create([
             'name' => 'Action',
         ]);
-        Gender::create([
+        Genre::create([
             'name' => 'Adventure',
         ]);
-        Gender::create([
+        Genre::create([
             'name' => 'Comedy',
         ]);
-        Gender::create([
+        Genre::create([
             'name' => 'Drama',
         ]);
-        Gender::create([
+        Genre::create([
             'name' => 'Fantasy',
         ]);
-        Gender::create([
+        Genre::create([
             'name' => 'Horror',
         ]);
-        Gender::create([
+        Genre::create([
             'name' => 'Mystery',
         ]);
-        Gender::create([
+        Genre::create([
             'name' => 'Romance',
         ]);
-        Gender::create([
+        Genre::create([
             'name' => 'Sci-Fi',
         ]);
-        Gender::create([
+        Genre::create([
             'name' => 'Thriller',
         ]);
-        Gender::create([
+        Genre::create([
             'name' => 'Martial Arts',
         ]);
     }

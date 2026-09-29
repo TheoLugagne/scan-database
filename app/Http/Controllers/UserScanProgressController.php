@@ -50,11 +50,11 @@ class UserScanProgressController extends Controller
         $search = $request->input('search', '');
         $readingStatus = $request->input('reading_status', '');
         $status = $request->input('status', '');
-        $genderIds = $request->input('gender_ids', '');
+        $genreIds = $request->input('genre_ids', '');
 
         $query = UserScanProgress::query()
             ->where('user_scan_progress.user_id', Auth::id())
-            ->with(['scan.genders'])
+            ->with(['scan.genres'])
             ->join('scans', 'user_scan_progress.scan_id', '=', 'scans.id')
             ->select('user_scan_progress.*');
 
@@ -73,15 +73,15 @@ class UserScanProgressController extends Controller
             $query->where('scans.status', $status);
         }
 
-        if ($genderIds) {
-            $genderIdsArray = is_array($genderIds)
-                ? array_map('intval', $genderIds)
-                : array_map('intval', explode(',', $genderIds));
-            $genderIdsArray = array_filter($genderIdsArray);
+        if ($genreIds) {
+            $genreIdsArray = is_array($genreIds)
+                ? array_map('intval', $genreIds)
+                : array_map('intval', explode(',', $genreIds));
+            $genreIdsArray = array_filter($genreIdsArray);
 
-            if (!empty($genderIdsArray)) {
-                $query->whereHas('scan.genders', function ($q) use ($genderIdsArray) {
-                    $q->whereIn('genders.id', $genderIdsArray);
+            if (!empty($genreIdsArray)) {
+                $query->whereHas('scan.genres', function ($q) use ($genreIdsArray) {
+                    $q->whereIn('genres.id', $genreIdsArray);
                 });
             }
         }
@@ -114,7 +114,7 @@ class UserScanProgressController extends Controller
     public function show(UserScanProgress $userScanProgress)
     {
         $this->authorize('view', $userScanProgress);
-        $userScanProgress->load(['scan.genders']);
+        $userScanProgress->load(['scan.genres']);
         $reading_status_list = ReadingStatus::all();
         return view('userScanProgress.show', compact('userScanProgress', 'reading_status_list'));
     }
