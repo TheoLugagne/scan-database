@@ -21,44 +21,72 @@ class UserScanProgressController extends Controller
     public function index(Request $request)
     {
         $this->authorize('viewAny', UserScanProgress::class);
-        $perPage = $request->input('per_page', 12);
-        
-        // Get only the authenticated user's scan progress
-        $userScanProgress = UserScanProgress::where('user_id', Auth::id())
-            ->with(['scan.genders'])
-            ->latest('updated_at')
+        $perPage = max(1, (int) $request->input('per_page', 12));
+
+        $userScanProgress = $this->filteredProgressQuery($request)
+            ->latest('user_scan_progress.updated_at')
             ->paginate($perPage);
-            
+
         return view('userScanProgress.index', compact('userScanProgress', 'perPage'));
     }
 
     public function fetch(Request $request)
     {
-        // Clean and validate the per_page parameter
-        $perPage = (int) $request->input('per_page', 12);
-        // Ensure it's at least 1
-        $perPage = max(1, $perPage);
+        $perPage = max(1, (int) $request->input('per_page', 12));
 
-        $search = $request->input('search', '');
-
-        // Use the UserScanProgress model directly with a query builder
-        $query = UserScanProgress::query()
-            ->where('user_id', Auth::id())
-            ->with(['scan.genders'])
-            ->join('scans', 'user_scan_progress.scan_id', '=', 'scans.id');
-
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('scans.title', 'like', '%' . $search . '%')
-                  ->orWhere('scans.link_to_scan', 'like', '%' . $search . '%');
-            });
-        }
-
-        $userScanProgress = $query->latest('user_scan_progress.updated_at')
-            ->select('user_scan_progress.*')
+        $userScanProgress = $this->filteredProgressQuery($request)
+            ->latest('user_scan_progress.updated_at')
             ->paginate($perPage);
 
         return view('userScanProgress.partials.scan-progress-list', compact('userScanProgress'))->render();
+    }
+
+    /**
+     * The current user's progress, with the same search and filters as the catalog.
+     * user_id is qualified because the query joins scans, which also has that column.
+     */
+    private function filteredProgressQuery(Request $request)
+    {
+        $search = $request->input('search', '');
+        $readingStatus = $request->input('reading_status', '');
+        $status = $request->input('status', '');
+        $genderIds = $request->input('gender_ids', '');
+
+        $query = UserScanProgress::query()
+            ->where('user_scan_progress.user_id', Auth::id())
+            ->with(['scan.genders'])
+            ->join('scans', 'user_scan_progress.scan_id', '=', 'scans.id')
+            ->select('user_scan_progress.*');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('scans.title', 'like', '%' . $search . '%')
+                    ->orWhere('scans.link_to_scan', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($readingStatus) {
+            $query->where('user_scan_progress.reading_status', $readingStatus);
+        }
+
+        if ($status) {
+            $query->where('scans.status', $status);
+        }
+
+        if ($genderIds) {
+            $genderIdsArray = is_array($genderIds)
+                ? array_map('intval', $genderIds)
+                : array_map('intval', explode(',', $genderIds));
+            $genderIdsArray = array_filter($genderIdsArray);
+
+            if (!empty($genderIdsArray)) {
+                $query->whereHas('scan.genders', function ($q) use ($genderIdsArray) {
+                    $q->whereIn('genders.id', $genderIdsArray);
+                });
+            }
+        }
+
+        return $query;
     }
 
     public function create(Scan $scan)

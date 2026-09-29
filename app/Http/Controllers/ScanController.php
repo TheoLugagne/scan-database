@@ -23,36 +23,72 @@ class ScanController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 12);
-        
-        // Get all scans with genders and paginate them
-        $scans = Scan::with('genders')->latest('updated_at')->paginate($perPage);
-        
+        $perPage = max(1, (int) $request->input('per_page', 12));
+        $scans = $this->filteredScanQuery($request)
+            ->with('genders')
+            ->latest('updated_at')
+            ->paginate($perPage);
+
         return view('scan.index', compact('scans', 'perPage'));
     }
 
     public function fetch(Request $request)
     {
-        // Clean and validate the per_page parameter
-        $perPage = (int) $request->input('per_page', 12);
-        // Ensure it's at least 1
-        $perPage = max(1, $perPage);
+        $perPage = max(1, (int) $request->input('per_page', 12));
+        $scans = $this->filteredScanQuery($request)
+            ->with('genders')
+            ->latest('updated_at')
+            ->paginate($perPage);
 
+        return view('scan.partials.scan-list', compact('scans'))->render();
+    }
+
+    /**
+     * Scans visible for the current search, status, gender, and reading-status filters.
+     * Reading status is limited to the logged-in user's progress.
+     */
+    private function filteredScanQuery(Request $request)
+    {
         $search = $request->input('search', '');
+        $gender_ids = $request->input('gender_ids', '');
+        $status = $request->input('status', '');
+        $reading_status = $request->input('reading_status', '');
 
         $query = Scan::query();
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', '%' . $search . '%')
-                  ->orWhere('link_to_scan', 'like', '%' . $search . '%');
+                    ->orWhere('link_to_scan', 'like', '%' . $search . '%');
             });
         }
 
-        $scans = $query->with('genders')->latest('updated_at')
-            ->paginate($perPage);
+        if ($gender_ids) {
+            $genderIdsArray = is_array($gender_ids)
+                ? array_map('intval', $gender_ids)
+                : array_map('intval', explode(',', $gender_ids));
+            $genderIdsArray = array_filter($genderIdsArray);
 
-        return view('scan.partials.scan-list', compact('scans'))->render();
+            if (!empty($genderIdsArray)) {
+                $query->whereHas('genders', function ($q) use ($genderIdsArray) {
+                    $q->whereIn('genders.id', $genderIdsArray);
+                });
+            }
+        }
+
+        if ($status) {
+            $query->where('status', ScanStatus::from($status));
+        }
+
+        if ($reading_status) {
+            $userId = Auth::id();
+            $query->whereHas('userScanProgress', function ($q) use ($reading_status, $userId) {
+                $q->where('user_scan_progress.user_id', $userId)
+                    ->where('user_scan_progress.reading_status', ReadingStatus::from($reading_status));
+            });
+        }
+
+        return $query;
     }
 
     /**

@@ -26,4 +26,15 @@ class UserScanProgress extends Model
     {
         return $this->belongsTo(Scan::class);
     }
+
+    public static function getFilterSectionsData() {
+        return [
+            'reading_status' => [
+                'title' => 'Reading Status',
+                'elts' => ReadingStatus::all(),
+                'type' => 'radio',
+                'name' => 'reading_status',
+            ],
+        ];
+    }
 }

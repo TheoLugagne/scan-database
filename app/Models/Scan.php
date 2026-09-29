@@ -35,4 +35,21 @@ class Scan extends Model
     public function genders() {
         return $this->belongsToMany(Gender::class);
     }
+
+    public static function getFilterSectionsData() {
+        return [
+            'status' => [
+                'title' => 'Status',
+                'elts' => ScanStatus::all(),
+                'type' => 'radio',
+                'name' => 'status',
+            ],
+            'genders' => [
+                'title' => 'Genders',
+                'elts' => Gender::all(),
+                'type' => 'multiselect',
+                'name' => 'gender_ids',
+            ],
+        ];
+    }
 }

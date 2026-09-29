@@ -9,24 +9,7 @@
             </div>
             
             {{-- Centered Search Bar (wider on small screens) --}}
-            <div class="flex-1 flex justify-center">
-                <div class="relative w-full max-w-md sm:max-w-xl">
-                    <input type="text" 
-                           id="search" 
-                           class="w-full bg-gray-800 border border-gray-600 text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 pr-10" 
-                           placeholder="Search">
-                    <button type="button" 
-                            id="search-button"
-                            class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-white">
-                        <svg id="search-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                        <svg id="clear-icon" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
+            <x-search.searchbar />
 
             {{-- Right side with responsive width --}}
             <div class="w-24 sm:w-48 flex justify-end">
@@ -66,11 +49,8 @@
 
     @push('scripts')
     <script>
-        let searchTimeout;
-        const searchInput = document.getElementById('search');
-        const searchButton = document.getElementById('search-button');
-        const searchIcon = document.getElementById('search-icon');
-        const clearIcon = document.getElementById('clear-icon');
+        // Get references to DOM elements (may already be initialized by searchbar component)
+        searchInput = document.getElementById('search');
         const perPageInput = document.getElementById('per_page');
         const scansContainer = document.getElementById('scans-container');
 
@@ -94,24 +74,64 @@
         }
 
         // Function to fetch scans with current parameters
-        function fetchScans() {
+        function fetchScans(updateHistory = true) {
             const params = new URLSearchParams(window.location.search);
-            const search = searchInput.value;
             const perPage = perPageInput.value;
             const currentPage = getCurrentPage();
             
-            if (search) params.set('search', search);
-            else params.delete('search');
+            // Get all filter values
+            let filterValues = {};
+            if (typeof window.collectAllFilterValues === 'function') {
+                filterValues = window.collectAllFilterValues();
+            }
+            
+            // Remove existing filter params first to avoid duplicates
+            Object.keys(filterValues).forEach(key => {
+                params.delete(key);
+                params.delete(key + '[]');
+            });
+            
+            // Add filter values to params
+            Object.entries(filterValues).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== '') {
+                    if (Array.isArray(value)) {
+                        // For arrays, add each value as a separate param (Laravel style)
+                        value.forEach(v => {
+                            params.append(key + '[]', v);
+                        });
+                    } else {
+                        params.set(key, value);
+                    }
+                }
+            });
             
             params.set('per_page', perPage);
             params.set('page', currentPage);
             
             // Update URL without triggering a page reload
-            updateUrlParams({
-                search: search || null,
+            const urlParams = {
+                search: params.get('search') || null,
                 per_page: perPage || 12,
                 page: currentPage || 1
+            };
+            
+            // Add filter values to URL params (include null values to remove them from URL)
+            Object.entries(filterValues).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== '') {
+                    if (Array.isArray(value)) {
+                        urlParams[key] = value.join(',');
+                    } else {
+                        urlParams[key] = value;
+                    }
+                } else {
+                    // Explicitly set to null so updateUrlParams will remove it from URL
+                    urlParams[key] = null;
+                }
             });
+            
+            if (updateHistory) {
+                updateUrlParams(urlParams);
+            }
 
             // Fetch new content
             fetch(`{{ route('userScanProgress.fetch') }}?${params.toString()}`)
@@ -132,37 +152,6 @@
             fetchScans();
         }
 
-        // Handle search input with debounce
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                // Reset to first page when searching
-                updateUrlParams({ page: 1 });
-                fetchScans();
-            }, 500);
-
-            // Toggle clear button visibility
-            if (this.value) {
-                searchIcon.classList.add('hidden');
-                clearIcon.classList.remove('hidden');
-            } else {
-                searchIcon.classList.remove('hidden');
-                clearIcon.classList.add('hidden');
-            }
-        });
-
-        // Handle clear search button
-        searchButton.addEventListener('click', function() {
-            if (searchInput.value) {
-                searchInput.value = '';
-                searchIcon.classList.remove('hidden');
-                clearIcon.classList.add('hidden');
-                // Reset to first page when clearing search
-                updateUrlParams({ page: 1 });
-                fetchScans();
-            }
-        });
-
         // Handle per page input
         perPageInput.addEventListener('change', function() {
             // Ensure value is at least 1
@@ -182,44 +171,53 @@
                 const page = params.get('page');
                 
                 // Preserve current search and per_page values
-                if (searchInput.value) params.set('search', searchInput.value);
                 params.set('per_page', perPageInput.value);
+                params.set('search', searchInput.value);     
                 
                 // Update URL and fetch
                 updateUrlParams({
                     page: page,
                     search: searchInput.value || null,
-                    per_page: perPageInput.value
+                    per_page: perPageInput.value || 12
                 });
                 
                 fetchScans();
             }
         });
 
-        // Handle browser back/forward buttons
+        function listParamsPresent(params) {
+            return ['search', 'page', 'per_page', 'status', 'reading_status', 'gender_ids'].some(key => params.get(key))
+                || params.getAll('gender_ids[]').some(Boolean);
+        }
+
+        function syncListStateFromUrl(params) {
+            if (searchInput) {
+                searchInput.value = params.get('search') || '';
+            }
+            if (perPageInput) {
+                perPageInput.value = params.get('per_page') || 12;
+            }
+            if (typeof window.applyFiltersFromUrl === 'function') {
+                window.applyFiltersFromUrl(params);
+            }
+        }
+
+        // Handle browser back/forward buttons. The URL is already correct, so do not
+        // write the previous selector values back over it.
         window.addEventListener('popstate', function() {
             const params = new URLSearchParams(window.location.search);
-            searchInput.value = params.get('search') || '';
-            perPageInput.value = params.get('per_page') || 12;
-            
-            // Update search icon state
-            if (searchInput.value) {
-                searchIcon.classList.add('hidden');
-                clearIcon.classList.remove('hidden');
-            } else {
-                searchIcon.classList.remove('hidden');
-                clearIcon.classList.add('hidden');
-            }
-            
-            fetchScans();
+            syncListStateFromUrl(params);
+            fetchScans(false);
         });
 
         // Initialize page from URL on load
         document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
-            const page = params.get('page');
-            if (page) {
-                updateUrlParams({ page: page });
+
+            syncListStateFromUrl(params);
+
+            if (listParamsPresent(params)) {
+                fetchScans(false);
             }
         });
     </script>
