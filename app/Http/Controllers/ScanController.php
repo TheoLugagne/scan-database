@@ -9,7 +9,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\UserScanProgress;
-use App\Models\Gender;
+use App\Models\Genre;
 use App\Models\ScanStatus;
 use App\Models\ReadingStatus;
 use Illuminate\Support\Facades\Log;
@@ -25,7 +25,7 @@ class ScanController extends Controller
     {
         $perPage = max(1, (int) $request->input('per_page', 12));
         $scans = $this->filteredScanQuery($request)
-            ->with('genders')
+            ->with('genres')
             ->latest('updated_at')
             ->paginate($perPage);
 
@@ -36,7 +36,7 @@ class ScanController extends Controller
     {
         $perPage = max(1, (int) $request->input('per_page', 12));
         $scans = $this->filteredScanQuery($request)
-            ->with('genders')
+            ->with('genres')
             ->latest('updated_at')
             ->paginate($perPage);
 
@@ -44,13 +44,13 @@ class ScanController extends Controller
     }
 
     /**
-     * Scans visible for the current search, status, gender, and reading-status filters.
+     * Scans visible for the current search, status, genre, and reading-status filters.
      * Reading status is limited to the logged-in user's progress.
      */
     private function filteredScanQuery(Request $request)
     {
         $search = $request->input('search', '');
-        $gender_ids = $request->input('gender_ids', '');
+        $genre_ids = $request->input('genre_ids', '');
         $status = $request->input('status', '');
         $reading_status = $request->input('reading_status', '');
 
@@ -63,15 +63,15 @@ class ScanController extends Controller
             });
         }
 
-        if ($gender_ids) {
-            $genderIdsArray = is_array($gender_ids)
-                ? array_map('intval', $gender_ids)
-                : array_map('intval', explode(',', $gender_ids));
-            $genderIdsArray = array_filter($genderIdsArray);
+        if ($genre_ids) {
+            $genreIdsArray = is_array($genre_ids)
+                ? array_map('intval', $genre_ids)
+                : array_map('intval', explode(',', $genre_ids));
+            $genreIdsArray = array_filter($genreIdsArray);
 
-            if (!empty($genderIdsArray)) {
-                $query->whereHas('genders', function ($q) use ($genderIdsArray) {
-                    $q->whereIn('genders.id', $genderIdsArray);
+            if (!empty($genreIdsArray)) {
+                $query->whereHas('genres', function ($q) use ($genreIdsArray) {
+                    $q->whereIn('genres.id', $genreIdsArray);
                 });
             }
         }
@@ -96,9 +96,9 @@ class ScanController extends Controller
      */
     public function create()
     {
-        $genders = Gender::all();
+        $genres = Genre::all();
         $status_list = ScanStatus::all();
-        return view('scan.create', ['genders' => $genders, 'status' => $status_list]);
+        return view('scan.create', ['genres' => $genres, 'status' => $status_list]);
     }
 
     /**
@@ -112,7 +112,7 @@ class ScanController extends Controller
                 'summary' => 'nullable|string',
                 'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 'link_to_scan' => 'nullable|url',
-                'gender_ids' => 'nullable|string|regex:/^\d+(,\d+)*$/',
+                'genre_ids' => 'nullable|string|regex:/^\d+(,\d+)*$/',
                 'status' => ['required', Rule::enum(ScanStatus::class)],
             ]);
 
@@ -127,10 +127,10 @@ class ScanController extends Controller
             // Create the scan record
             $scan = Scan::create($validated);
             
-            // attach genders to the scan
-            if (!empty($validated['gender_ids'])) {
-                $validated['gender_ids'] = explode(',', $validated['gender_ids']);
-                $scan->genders()->attach($validated['gender_ids']);
+            // attach genres to the scan
+            if (!empty($validated['genre_ids'])) {
+                $validated['genre_ids'] = explode(',', $validated['genre_ids']);
+                $scan->genres()->attach($validated['genre_ids']);
             }
             
             if (auth()->check()) {
@@ -164,7 +164,7 @@ class ScanController extends Controller
     public function show(Scan $scan)
     {
         $this->authorize('view', $scan);
-        $scan->load('genders');
+        $scan->load('genres');
         return view('scan.show', compact('scan'));
     }
 
@@ -180,9 +180,9 @@ class ScanController extends Controller
         if (!str_contains($previousUrl, '/scan/' . $scan->id . '/edit')) {
             session(['scan_previous_url' => $previousUrl]);
         }
-        $genders = Gender::all();
+        $genres = Genre::all();
         $status_list = ScanStatus::all();
-        return view('scan.edit', compact('scan', 'genders', 'status_list'));
+        return view('scan.edit', compact('scan', 'genres', 'status_list'));
     }
 
     /**
@@ -197,7 +197,7 @@ class ScanController extends Controller
             'summary' => 'nullable|string',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'link_to_scan' => 'nullable|url',
-            'gender_ids' => 'nullable|string|regex:/^\d+(,\d+)*$/',
+            'genre_ids' => 'nullable|string|regex:/^\d+(,\d+)*$/',
             'status' => ['required', Rule::enum(ScanStatus::class)],
         ]);
 
@@ -214,14 +214,14 @@ class ScanController extends Controller
         // Check if any values are actually different
         $hasChanges = false;
         foreach ($validated as $field => $value) {
-            if ($field === 'gender_ids') {
-                // Special handling for gender_ids - compare with actual relationships
-                $currentGenderIds = $scan->genders->pluck('id')->sort()->values()->toArray();
-                $newGenderIds = is_array($value) ? $value : explode(',', $value);
-                $newGenderIds = array_map('intval', $newGenderIds);
-                sort($newGenderIds);
+            if ($field === 'genre_ids') {
+                // Special handling for genre_ids - compare with actual relationships
+                $currentGenreIds = $scan->genres->pluck('id')->sort()->values()->toArray();
+                $newGenreIds = is_array($value) ? $value : explode(',', $value);
+                $newGenreIds = array_map('intval', $newGenreIds);
+                sort($newGenreIds);
                 
-                if ($currentGenderIds !== $newGenderIds) {
+                if ($currentGenreIds !== $newGenreIds) {
                     $hasChanges = true;
                     break;
                 }
@@ -243,10 +243,10 @@ class ScanController extends Controller
         try {
             // Update the scan
             $scan->update($validated);
-            // update genders
-            if (!empty($validated['gender_ids'])) {
-                $validated['gender_ids'] = explode(',', $validated['gender_ids']);
-                $scan->genders()->sync($validated['gender_ids']);
+            // update genres
+            if (!empty($validated['genre_ids'])) {
+                $validated['genre_ids'] = explode(',', $validated['genre_ids']);
+                $scan->genres()->sync($validated['genre_ids']);
             }
             return redirect()->back()
                 ->with('success', 'Scan updated successfully!');

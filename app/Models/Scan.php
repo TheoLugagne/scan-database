@@ -32,8 +32,8 @@ class Scan extends Model
         return $this->hasMany(UserScanProgress::class);
     }
 
-    public function genders() {
-        return $this->belongsToMany(Gender::class);
+    public function genres() {
+        return $this->belongsToMany(Genre::class);
     }
 
     public static function getFilterSectionsData() {
@@ -44,11 +44,11 @@ class Scan extends Model
                 'type' => 'radio',
                 'name' => 'status',
             ],
-            'genders' => [
-                'title' => 'Genders',
-                'elts' => Gender::all(),
+            'genres' => [
+                'title' => 'Genres',
+                'elts' => Genre::all(),
                 'type' => 'multiselect',
-                'name' => 'gender_ids',
+                'name' => 'genre_ids',
             ],
         ];
     }

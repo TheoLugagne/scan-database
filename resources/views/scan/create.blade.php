@@ -53,7 +53,7 @@
                 <p class="mt-1 text-sm text-gray-400">Optional</p>
             </div>
 
-            <x-m2m.pills_selector :elts="$genders" :selected_elts="[]" :title="'Genders'" :field_name="'gender_ids'" />
+            <x-m2m.pills_selector :elts="$genres" :selected_elts="[]" :title="'Genres'" :field_name="'genre_ids'" />
             <x-m2o.selector :elts="$status" :selected_elt="$status[0]" :title="'Status'" :field_name="'status'" />
             
             <div>

@@ -22,9 +22,9 @@
                             {{ __('My Scans') }}
                         </x-nav-link>
                         @if (Auth::user()->role === 'admin')
-                            <x-nav-link :href="route('gender.index')"
+                            <x-nav-link :href="route('genre.index')"
                                 class="text-gray-300 hover:text-white">
-                                {{ __('Genders') }}
+                                {{ __('Genres') }}
                             </x-nav-link>
                         @endif
                     </div>

@@ -32,10 +32,10 @@
                         @endif
                     </div>
 
-                    {{-- Gender Pills --}}
+                    {{-- Genre Pills --}}
                     <div class="border-b border-gray-700 pb-4 mb-6 text-center flex flex-col items-center">
-                        <h3 class="text-gray-400 text-sm mb-2">Genders</h3>
-                        <x-m2m.pills :elts="$scan->genders" :title="'Genders'"/>
+                        <h3 class="text-gray-400 text-sm mb-2">Genres</h3>
+                        <x-m2m.pills :elts="$scan->genres" :title="'Genres'"/>
                     </div>
                     
                     <div class="border-b border-gray-700 pb-4 mb-6 text-center">

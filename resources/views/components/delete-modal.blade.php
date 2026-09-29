@@ -64,14 +64,14 @@ function showDeleteUserScanProgressModal(scanId, scanTitle) {
     modalContent.classList.remove('scale-0', 'opacity-0');
 }
 
-function showDeleteGenderModal(genderId, genderName) {
+function showDeleteGenreModal(genreId, genreName) {
     const modal = document.getElementById('deleteModal');
     const modalContent = modal.querySelector('div');
     const form = document.getElementById('deleteForm');
     const titleSpan = document.getElementById('deleteTitle');
     
-    titleSpan.textContent = genderName;
-    form.action = `/gender/${genderId}`;
+    titleSpan.textContent = genreName;
+    form.action = `/genre/${genreId}`;
 
     modal.classList.remove('hidden');
     modal.offsetHeight;

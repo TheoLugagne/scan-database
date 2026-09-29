@@ -76,7 +76,7 @@
             const params = new URLSearchParams(window.location.search);
             const searchValue = params.get('search') || '';
             searchInput.value = searchValue;
-            const hasFilters = ['status', 'reading_status', 'gender_ids'].some(function(key) {
+            const hasFilters = ['status', 'reading_status', 'genre_ids'].some(function(key) {
                 return params.get(key) || params.getAll(key + '[]').some(Boolean);
             });
             isFiltered = hasFilters;

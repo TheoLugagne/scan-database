@@ -186,8 +186,8 @@
         });
 
         function listParamsPresent(params) {
-            return ['search', 'page', 'per_page', 'status', 'reading_status', 'gender_ids'].some(key => params.get(key))
-                || params.getAll('gender_ids[]').some(Boolean);
+            return ['search', 'page', 'per_page', 'status', 'reading_status', 'genre_ids'].some(key => params.get(key))
+                || params.getAll('genre_ids[]').some(Boolean);
         }
 
         function syncListStateFromUrl(params) {

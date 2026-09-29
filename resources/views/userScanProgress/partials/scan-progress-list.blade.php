@@ -21,10 +21,10 @@
                         <p class="text-gray-400 text-sm mb-4 line-clamp-3">{{ $scan->scan->summary }}</p>
                     @endif
                     
-                    {{-- Add genders and status display --}}
+                    {{-- Add genres and status display --}}
                     <div class="flex items-center justify-between gap-2 mb-4">
-                        {{-- Gender Pills --}}
-                        <x-m2m.pills :elts="$scan->scan->genders" :title="'Genders'" />
+                        {{-- Genre Pills --}}
+                        <x-m2m.pills :elts="$scan->scan->genres" :title="'Genres'" />
                         <x-m2o.pill :elt="$scan->reading_status" :size="'sm'" />
                     </div>
                     

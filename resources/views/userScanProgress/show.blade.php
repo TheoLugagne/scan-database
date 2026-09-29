@@ -57,10 +57,10 @@
                     @endif
                 </div>
 
-                {{-- Add genders and status display --}}
+                {{-- Add genres and status display --}}
                 <div class="border-b border-gray-700 pb-4">
-                    <h3 class="text-gray-400 text-sm mb-2">Genders</h3>
-                    <x-m2m.pills :elts="$userScanProgress->scan->genders" :title="'Genders'"/>
+                    <h3 class="text-gray-400 text-sm mb-2">Genres</h3>
+                    <x-m2m.pills :elts="$userScanProgress->scan->genres" :title="'Genres'"/>
                 </div>
 
                 <div class="pt-4 flex space-x-4">

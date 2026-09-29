@@ -22,8 +22,8 @@
                     @endif
                     
                     <div class="flex items-center justify-between gap-2">
-                        {{-- Gender Pills --}}
-                        <x-m2m.pills :elts="$scan->genders" :title="'Genders'" />
+                        {{-- Genre Pills --}}
+                        <x-m2m.pills :elts="$scan->genres" :title="'Genres'" />
                         <x-m2o.pill :elt="$scan->status" :size="'sm'" />
                     </div>
 

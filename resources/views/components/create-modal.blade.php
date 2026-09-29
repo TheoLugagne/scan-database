@@ -2,7 +2,7 @@
     <div class="relative top-20 mx-auto p-5 w-96 shadow-2xl rounded-lg bg-gray-800 transform transition-all duration-300 ease-in-out scale-0 opacity-0 border border-gray-700">
         <div class="mt-3 text-center">
             <form id="createForm" method="POST" class="inline">
-                <h3 class="text-lg leading-6 font-medium text-white mt-2">Create Gender</h3>
+                <h3 class="text-lg leading-6 font-medium text-white mt-2">Create Genre</h3>
                 <div class="mt-2 px-7 py-3">
                     
                         <label for="name" class="block text-base font-medium text-gray-300">Name</label>
@@ -28,13 +28,13 @@
 </div>
 
 <script>
-function showCreateGenderModal(genderName) {
+function showCreateGenreModal(genreName) {
     const modal = document.getElementById('createModal');
     const modalContent = modal.querySelector('div');
     const form = document.getElementById('createForm');
     const nameInput = document.getElementById('name');
 
-    form.action = `{{ route('gender.store') }}`;
+    form.action = `{{ route('genre.store') }}`;
     
     modal.classList.remove('hidden');
     modal.offsetHeight;

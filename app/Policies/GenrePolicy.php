@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\gender;
+use App\Models\Genre;
 use Illuminate\Auth\Access\Response;
 
-class GenderPolicy
+class GenrePolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -19,7 +19,7 @@ class GenderPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, gender $gender): bool
+    public function view(User $user, Genre $genre): bool
     {
         return $user->role === 'admin';
     }
@@ -35,7 +35,7 @@ class GenderPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, gender $gender): bool
+    public function update(User $user, Genre $genre): bool
     {
         return $user->role === 'admin';
     }
@@ -43,7 +43,7 @@ class GenderPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, gender $gender): bool
+    public function delete(User $user, Genre $genre): bool
     {
         return $user->role === 'admin';
     }
@@ -51,7 +51,7 @@ class GenderPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, gender $gender): bool
+    public function restore(User $user, Genre $genre): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class GenderPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, gender $gender): bool
+    public function forceDelete(User $user, Genre $genre): bool
     {
         return false;
     }
