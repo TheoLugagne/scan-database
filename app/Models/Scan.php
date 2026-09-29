@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -38,6 +39,22 @@ class Scan extends Model
 
     public function genres() {
         return $this->belongsToMany(Genre::class);
+    }
+
+    /**
+     * True when title, summary, cover, link, status, available chapters, and at least one genre are filled.
+     */
+    protected function isInformationComplete(): Attribute
+    {
+        return Attribute::get(fn () => filled($this->title)
+            && filled($this->summary)
+            && filled($this->cover_image)
+            && filled($this->link_to_scan)
+            && filled($this->status)
+            && $this->available_chapters !== null
+            && ($this->relationLoaded('genres')
+                ? $this->genres->isNotEmpty()
+                : $this->genres()->exists()));
     }
 
     public static function getFilterSectionsData() {
