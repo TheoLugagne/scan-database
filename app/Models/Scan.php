@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Scan extends Model
 {
@@ -35,6 +36,11 @@ class Scan extends Model
     public function userScanProgress()
     {
         return $this->hasMany(UserScanProgress::class);
+    }
+
+    public function currentUserProgress()
+    {
+        return $this->hasOne(UserScanProgress::class)->where('user_id', Auth::id());
     }
 
     public function genres() {

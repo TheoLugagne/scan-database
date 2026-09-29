@@ -27,6 +27,9 @@
                         <x-m2o.pill :elt="$scan->status" :size="'sm'" />
                     </div>
 
+                    @if($scan->currentUserProgress)
+                        <p class="mt-2 text-sm text-gray-400">Chapter {{ $scan->currentUserProgress->current_chapter }}</p>
+                    @endif
                     <div class="mt-4">
                         <x-scan.available-chapters :scan="$scan" />
                     </div>
@@ -44,7 +47,7 @@
                         </div>
                     @endif
                     <div class="mt-4 flex justify-end space-x-2">
-                        @if(auth()->check() && !auth()->user()->scans()->where('scan_id', $scan->id)->exists())
+                        @if(auth()->check() && !$scan->currentUserProgress)
                         <a href="{{ route('userScanProgress.create', $scan) }}"
                             class="text-gray-400 hover:text-white">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
