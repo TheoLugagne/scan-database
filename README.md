@@ -1,66 +1,113 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Scan Database
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A shared catalog of scans (webtoons, manga, and similar series) with per-user reading progress. Anyone can browse the catalog. Signed-in readers track their own chapter and status. Admins keep the catalog complete: genres, missing fields, and chapter counts that have gone stale.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Catalog.** Each scan has a unique title, summary, cover, source link, publication status, available chapter count, and one or more genres. The listing supports search (title or source link), filters by publication status and genre, and pagination. Signed-in readers can also filter by their own reading status. Creating a scan starts a progress row for the current user.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Reading progress.** Each user has their own row per scan: current chapter and reading status (`not started`, `ongoing`, `completed`, `on hold`, `dropped`). Readers see only their own list. The current chapter can be updated from the progress page without a full form submit.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Publication status.** A scan is `ongoing`, `completed`, `hiatus`, or `cancelled`. That status belongs to the catalog entry, not to an individual reader.
 
-## Learning Laravel
+**Dashboard.** Signed-in users see their library broken down by reading status, how many chapters they are behind the published count, reads that are on hiatus or cancelled, recently touched reads, and ongoing / unread / on-hold reads left untouched the longest.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**Admin.** Users with `role = admin` also see catalog totals by publication status, scans missing required information, and chapter counts that were never dated or last changed more than 30 days ago. Admins manage genres and are the only role that can delete a scan. A scan counts as complete when title, summary, cover, source link, status, available chapters, and at least one genre are all filled. Changing the chapter count stamps `available_chapters_updated_at`; clearing the count clears that date.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+**Accounts.** Registration, login, password reset, email verification, and profile edit come from Laravel Breeze. The first admin is created by the role migration from `SUPERUSER`, `SUPERUSER_EMAIL`, and `SUPERUSER_PASSWORD`.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Architecture
 
-## Laravel Sponsors
+Laravel 12 application (PHP 8.2) with server-rendered Blade views. Tailwind CSS and Alpine.js are built by Vite. State lives in the database (SQLite by default; MySQL and MariaDB are configured). Sessions, cache, and queues use Laravel’s defaults.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```
+Browser
+  │
+  ▼
+routes/web.php          public catalog
+routes/auth.php         Breeze auth, behind guest or auth middleware
+  │
+  ▼
+Controllers             Scan, UserScanProgress, Dashboard, Genre, Profile
+  │
+  ├── Policies          Scan (delete is admin-only), UserScanProgress (owner only), Genre (admin)
+  │
+  ▼
+Eloquent models         Scan, User, Genre, UserScanProgress
+Enums                   ScanStatus, ReadingStatus
+  │
+  ▼
+Database                scans, users, genres, genre_scan, user_scan_progress
+```
 
-### Premium Partners
+| Piece | Role |
+| --- | --- |
+| `ScanController` | Catalog CRUD, search and filters, cover uploads on the `public` disk, chapter-count timestamp |
+| `UserScanProgressController` | The signed-in user’s list, filters, and chapter updates |
+| `DashboardController` | Reader panels for everyone; catalog health panels when `role` is `admin` |
+| `GenreController` | Genre list, create, and delete |
+| `Scan::scopeIncomplete()` | Scans missing a required field, a chapter count, or any genre |
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Catalog routes (`/scan`) are public. Dashboard, My Scans, genres, profile, and chapter updates sit behind the `auth` middleware. Policies enforce ownership of progress rows and restrict genre changes and scan deletion to admins. Cover files are stored under `storage/app/public` and served through the `public` disk (`php artisan storage:link`).
 
-## Contributing
+List pages load the first page as a normal view, then request filtered HTML from `/scans/fetch` and `/userScanProgress/fetch`. Laravel exposes a health check at `/up`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Data model
 
-## Code of Conduct
+```
+users 1───* user_scan_progress *───1 scans *───* genres
+                                      (genre_scan)
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **users** — name, email, password, `role` (`user` or `admin`).
+- **scans** — shared catalog row: title (unique), summary, cover path, source URL, publication status, `available_chapters`, `available_chapters_updated_at`.
+- **genres** — name. Linked to scans through `genre_scan`.
+- **user_scan_progress** — `user_id`, `scan_id`, `current_chapter`, `reading_status`. Deleting a user or a scan cascades to these rows.
 
-## Security Vulnerabilities
+## Local setup
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Requirements: PHP 8.2+, Composer, Node.js, and a database. SQLite needs no extra server.
 
-## License
+```bash
+composer install
+cp .env.example .env   # create .env if the example file is absent
+php artisan key:generate
+touch database/database.sqlite
+php artisan migrate
+php artisan storage:link
+npm install
+npm run build
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Set these in `.env` before migrating if you want a known admin instead of the migration defaults (`admin` / `admin@example.com` / `admin`):
+
+```
+SUPERUSER=
+SUPERUSER_EMAIL=
+SUPERUSER_PASSWORD=
+```
+
+`composer run dev` starts the PHP server, queue listener, log tail, and Vite together. Tests run with `php artisan test`.
+
+## Deployment
+
+Pushes to `main` run `.github/workflows/deploy.yml`. The job SSHs into the server with `appleboy/ssh-action` and runs:
+
+```bash
+cd $SSH_REMOTE_PATH
+git pull
+php artisan migrate
+npm install
+npm run build
+```
+
+GitHub Actions secrets:
+
+| Secret | Use |
+| --- | --- |
+| `SSH_HOST` | Server hostname |
+| `SSH_USERNAME` | SSH user |
+| `SSH_PASSWORD` | SSH password |
+| `SSH_REMOTE_PATH` | Absolute path of the deployed checkout |
+
+The server is expected to already have PHP, Composer’s `vendor/` directory, Node.js, a populated `.env` (`APP_KEY`, database credentials, `APP_URL`), and a linked `public/storage`. The workflow does not run `composer install` or `php artisan storage:link`. Run those on the server when PHP dependencies change or on a fresh checkout. The web server document root must be `public/`.
