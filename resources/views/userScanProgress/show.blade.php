@@ -11,30 +11,8 @@
     <div class="bg-gray-800 rounded-lg shadow-lg p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-4">
-                <div class="border-b border-gray-700 pb-4"> 
-                    <h3 class="text-gray-400 text-sm">Current Chapter</h3>
-                    <div class="flex items-center space-x-2">
-                        <input type="number" 
-                            id="current_chapter" 
-                            value="{{ $userScanProgress->current_chapter }}" 
-                            step="0.1"
-                            class="mt-1 block w-32 rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 text-base">
-                        
-                        <button onclick="incrementChapter()"
-                            class="mt-1 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded flex items-center justify-center w-10 h-10">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                        </button>
-
-                        <button onclick="updateChapter()"
-                            class="mt-1 bg-green-600 hover:bg-green-700 text-white p-2 rounded flex items-center justify-center w-10 h-10">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </button>
-                    </div>
-                    <div id="chapter-update-message" class="mt-2 text-sm hidden"></div>
+                <div class="border-b border-gray-700 pb-4">
+                    <x-scan.current-chapter :progress="$userScanProgress" />
                 </div>
 
                 <div class="border-b border-gray-700 pb-4">
@@ -104,53 +82,6 @@
     <x-delete-modal />
 
     @push('scripts')
-    <script>
-        function incrementChapter() {
-            const input = document.getElementById('current_chapter');
-            input.value = (parseFloat(input.value) + 1).toFixed(1);
-        }
-
-        function updateChapter() {
-            const chapter = document.getElementById('current_chapter').value;
-            const messageDiv = document.getElementById('chapter-update-message');
-            
-            const formData = new FormData();
-            formData.append('current_chapter', chapter);
-            formData.append('_token', '{{ csrf_token() }}');
-
-            fetch('{{ route('userScanProgress.update-chapter', $userScanProgress) }}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                messageDiv.classList.remove('hidden');
-                if (data.success) {
-                    messageDiv.className = 'mt-2 text-sm text-green-500';
-                    messageDiv.textContent = 'Chapter updated successfully';
-                } else {
-                    messageDiv.className = 'mt-2 text-sm text-red-500';
-                    messageDiv.textContent = 'Error updating chapter';
-                }
-                
-                setTimeout(() => {
-                    messageDiv.classList.add('hidden');
-                }, 3000);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                messageDiv.classList.remove('hidden');
-                messageDiv.className = 'mt-2 text-sm text-red-500';
-                messageDiv.textContent = 'Error updating chapter';
-                
-                setTimeout(() => {
-                    messageDiv.classList.add('hidden');
-                }, 3000);
-            });
-        }
-    </script>
+        @include('scan.partials.chapter-editor-script')
     @endpush
 </x-app-layout>

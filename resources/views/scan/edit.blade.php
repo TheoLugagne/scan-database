@@ -62,11 +62,12 @@
                         @enderror
                     </div>
 
-                    <!-- Genres -->
-                    <div class="border-b border-gray-700 pb-4">
-                        <h3 class="text-gray-400 text-sm">Genres</h3>
-                        <x-m2m.pills_selector :elts="$genres" :selected_elts="$scan->genres" :title="'Genres'" :field_name="'genre_ids'" />
-                    </div>
+                    
+                    @if($scan->currentUserProgress)
+                        <div class="border-b border-gray-700 pb-4">
+                            <x-scan.current-chapter :progress="$scan->currentUserProgress" />
+                        </div>
+                    @endif
 
                     <!-- Available chapters -->
                     <div class="border-b border-gray-700 pb-4">
@@ -87,6 +88,7 @@
                         @endif
                     </div>
 
+
                     <!-- Link to Scan -->
                     <div class="border-b border-gray-700 pb-4">
                         <h3 class="text-gray-400 text-sm">Link to Scan</h3>
@@ -106,6 +108,12 @@
                         @error('summary')
                             <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <!-- Genres -->
+                    <div class="border-b border-gray-700 pb-4">
+                        <h3 class="text-gray-400 text-sm">Genres</h3>
+                        <x-m2m.pills_selector :elts="$genres" :selected_elts="$scan->genres" :title="'Genres'" :field_name="'genre_ids'" />
                     </div>
 
                     <div class="pt-4 flex space-x-4">
@@ -158,6 +166,10 @@
             </div>
         </form>
     </div>
+
+    @push('scripts')
+        @include('scan.partials.chapter-editor-script')
+    @endpush
 
     {{-- Optional: Add JavaScript for auto-dismissing messages --}}
     <script>

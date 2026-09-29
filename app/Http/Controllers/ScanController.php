@@ -25,7 +25,7 @@ class ScanController extends Controller
     {
         $perPage = max(1, (int) $request->input('per_page', 12));
         $scans = $this->filteredScanQuery($request)
-            ->with('genres')
+            ->with(['genres', 'currentUserProgress'])
             ->latest('updated_at')
             ->paginate($perPage);
 
@@ -36,7 +36,7 @@ class ScanController extends Controller
     {
         $perPage = max(1, (int) $request->input('per_page', 12));
         $scans = $this->filteredScanQuery($request)
-            ->with('genres')
+            ->with(['genres', 'currentUserProgress'])
             ->latest('updated_at')
             ->paginate($perPage);
 
@@ -191,8 +191,9 @@ class ScanController extends Controller
     public function show(Scan $scan)
     {
         $this->authorize('view', $scan);
-        $scan->load('genres');
-        return view('scan.show', compact('scan'));
+        $scan->load(['genres', 'currentUserProgress']);
+        $status_list = ScanStatus::all();
+        return view('scan.show', compact('scan', 'status_list'));
     }
 
     /**
@@ -209,6 +210,7 @@ class ScanController extends Controller
         }
         $genres = Genre::all();
         $status_list = ScanStatus::all();
+        $scan->load('currentUserProgress');
         return view('scan.edit', compact('scan', 'genres', 'status_list'));
     }
 
